@@ -1,0 +1,11 @@
+[shout]
+JUKEBOX_SHOUT_HOST = localhost
+JUKEBOX_SHOUT_PORT = 8000
+JUKEBOX_SHOUT_USER = source
+JUKEBOX_SHOUT_password = hackme
+JUKEBOX_SHOUT_mount = /hackradio
+JUKEBOX_SHOUT_name = Hack Radio
+JUKEBOX_SHOUT_genre = Unknown
+JUKEBOX_SHOUT_url = http://www.example.com
+JUKEBOX_SHOUT_public = 1
+

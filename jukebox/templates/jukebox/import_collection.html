@@ -1,0 +1,15 @@
+{% extends "jukebox/base.html" %}
+
+{% block title %}Import collection{% endblock %}   
+
+{% block content %}
+
+<h1>Import Collection</h1>
+
+<form action="/jukebox/import_collection" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Submit" />
+</form>
+
+{% endblock %}   

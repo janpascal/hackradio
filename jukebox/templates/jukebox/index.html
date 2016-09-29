@@ -1,0 +1,27 @@
+{% extends "jukebox/base.html" %}
+
+{% block title %}Hack Radio{% endblock %}   
+
+{% block content %}
+
+<h1>Now Playing</h1>
+Current album: {{ current_album.path }}
+<table class="table table-striped">
+    <tr><th>Filename</th></tr>
+    {% for song in current_album.song_set.all %}
+    <tr>
+    <td>{{ song.filename }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<h1>Coming Up</h1>
+<table class="table table-striped">
+    <tr><th>Album path</th></tr>
+    {% for album in queue %}
+    <tr>
+    <td>{{ album.path }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}   
