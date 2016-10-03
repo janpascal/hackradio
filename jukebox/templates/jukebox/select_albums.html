@@ -1,0 +1,66 @@
+{% extends "jukebox/base.html" %}
+
+{% block title %}Hack Radio{% endblock %}   
+{% block content %}
+
+<h1>Select albums</h1>
+
+<table id="tree" data-path="">
+    <thead>
+    <tr><th>Album path</th></tr>
+    </thead>
+    <tbody>
+        {% for root in roots %}
+        <tr data-tt-id="{{ root }}" data-tt-branch="true">
+            <td><span class="folder">{{ root }}</span></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script type="text/javascript">
+$(document).ready( function() {
+    var table = $("#tree");
+
+    function load_children(root) {
+        root_id = root.id;
+        $.get('/jukebox/subdirs/' + root_id, function(data){
+            rows = ""
+            $.each(data.children, function(i, item) {
+                rows = rows + 
+                    "<tr data-tt-id='" + item.id + "' " +
+                    "data-tt-parent-id='" + root_id + "' " + 
+                    "data-tt-branch='true'>" +
+                    "<td><input type='checkbox'></td>" + 
+                    "<td><span class='folder'>" + item.name + "</span></td>" + 
+                    "</tr>";
+            });
+            table.treetable("loadBranch", root, rows);
+        });
+    }
+
+    table.treetable({
+        expandable: true,
+        initialState: "collapsed",
+        onNodeCollapse: function() {
+            var node = this;
+            table.treetable("unloadBranch", node);
+        },
+        onNodeExpand: function() {
+            var node = this;
+            load_children(node);
+        }
+    });
+
+    $(document).on("mousedown", "#tree tbody tr", function() {
+        $("tr.selected").removeClass("selected");
+        $(this).addClass("selected");
+        $.get("/jukebox/album/" + $(this).attr("data-tt-id") + "/select",
+                function(data) {
+                });
+    });
+
+});
+</script>
+
+{% endblock %}   

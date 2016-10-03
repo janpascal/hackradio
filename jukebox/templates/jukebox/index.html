@@ -6,11 +6,16 @@
 
 <h1>Now Playing</h1>
 Current album: {{ current_album.path }}
+
 <table class="table table-striped">
-    <tr><th>Filename</th></tr>
+    <tr>
+        <th>Filename</th>
+        <th>Skipped</th>i
+    </tr>
     {% for song in current_album.song_set.all %}
     <tr>
     <td>{{ song.filename }}</td>
+    <td class="btn skip_button" data-albumid="{{ song.album.pk }}" data-songid="{{ song.pk }}">{{ song.skipped }}</td>
     </tr>
     {% endfor %}
 </table>
@@ -24,4 +29,16 @@ Current album: {{ current_album.path }}
     </tr>
     {% endfor %}
 </table>
+
+<script type="text/javascript">
+$(document).ready( function() {
+    $(".skip_button").click(function(event) {
+        albumid = $(this).attr('data-albumid');
+        songid = $(this).attr('data-songid');
+        $.get('/jukebox/album/' + albumid + '/' + songid + '/skip', function(data){
+            $(this).html("True");
+        });
+    });
+});
+</script>
 {% endblock %}   

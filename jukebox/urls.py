@@ -1,5 +1,7 @@
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
+from __future__ import unicode_literals
+
 from django.conf.urls import url
 
 from . import views
@@ -8,7 +10,12 @@ app_name = 'jukebox'
 urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^now_playing$', views.now_playing, name='now_playing'),
+    url(r'^start$', views.start, name='start'),
+    url(r'^album/(?P<album_id>[0-9]+)/(?P<song_id>[0-9]+)/skip$', views.skip_song, name="skip_song"),
     url(r'^import_collection$', views.ImportCollectionView.as_view(), name='import_collection'),
+    url(r'^select_albums$', views.select_albums, name='select_albums'),
+    url(r'^album/(?P<album_path>.*)/select$', views.select_album, name='select_album'),
+    url(r'^subdirs/(?P<root>.*)$', views.album_subdirs, name="album_subdirs"),
     #url(r'^tweet/job/create$', views.create_job, name='create_job'),
     #url(r'^job/create$', views.create_job, name='create_job'),
     #url(r'^job/list$', views.list_jobs, name='list_jobs'),

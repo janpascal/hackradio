@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 import os.path
 
+from django.conf import settings
 from django.db import models
 from ordered_model.models import OrderedModel
 
@@ -18,10 +19,16 @@ class Album(OrderedModel):
 class Song(models.Model):
     #title = models.CharField(max_length=256)
     filename = models.CharField(max_length=256)
+    skipped = models.BooleanField(default=False)
     album = models.ForeignKey(Album, on_delete=models.CASCADE)
 
+    
+    def full_path(self):
+        return os.path.join(settings.JUKEBOX_ROOT_DIR, self.album.path, self.filename)
+
     def __str__(self):
-        return os.path.join(self.album.path, self.filename)
+        return self.full_path()
+
 
     class Meta:
         unique_together = ("album", "filename")
