@@ -2,7 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import Album, Song
+from .models import Folder, Song
 
-admin.site.register(Album)
+admin.site.register(Folder)
 admin.site.register(Song)

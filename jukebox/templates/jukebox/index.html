@@ -5,40 +5,86 @@
 {% block content %}
 
 <h1>Now Playing</h1>
-Current album: {{ current_album.path }}
+Current album: {{ current_folder.disk_path }}<br>
+Current song: {{ current_song.filename }}<br>
 
-<table class="table table-striped">
+<table id="now_playing" class="table table-striped">
     <tr>
+        <th width="5%">Skip</th>
         <th>Filename</th>
-        <th>Skipped</th>i
     </tr>
-    {% for song in current_album.song_set.all %}
-    <tr>
-    <td>{{ song.filename }}</td>
-    <td class="btn skip_button" data-albumid="{{ song.album.pk }}" data-songid="{{ song.pk }}">{{ song.skipped }}</td>
-    </tr>
+    {% for song in now_playing %}
+        <tr class="{% if song.now_playing %}success{% endif %} now_playing" data-songid="{{ song.id }}">
+        <td class="button btn-xs btn-block skip_button info" data-songid="{{ song.id }}">{{ song.skipped }}</td>
+        <td>{{ song.filename }}</td>
+        </tr>
     {% endfor %}
 </table>
 
 <h1>Coming Up</h1>
 <table class="table table-striped">
-    <tr><th>Album path</th></tr>
-    {% for album in queue %}
+    <tr><th>Folder path</th></tr>
+    {% for folder in queue %}
     <tr>
-    <td>{{ album.path }}</td>
+    <td>{{ folder.name }}</td>
     </tr>
     {% endfor %}
 </table>
 
 <script type="text/javascript">
+function skip_click(event) {
+    songid = $(this).attr('data-songid');
+    $.get('/jukebox/song/' + songid + '/skip', function(data){
+        //alert("Skipped song " + songid);
+        $("td[data-songid="+songid+"]").html("True");
+        //$(this).html("True");
+    });
+}
+
 $(document).ready( function() {
+    current_folder_id = -1
+    current_song_id = -1
     $(".skip_button").click(function(event) {
-        albumid = $(this).attr('data-albumid');
         songid = $(this).attr('data-songid');
-        $.get('/jukebox/album/' + albumid + '/' + songid + '/skip', function(data){
-            $(this).html("True");
+        $.get('/jukebox/song/' + songid + '/skip', function(data){
+            //alert("Skipped song " + songid);
+            $("td[data-songid="+songid+"]").html("True");
+            //$(this).html("True");
         });
     });
+    setInterval(function() {
+        $.get('/jukebox/now_playing', function(data){
+            new_folder_id = data.current_folder.id
+            if (new_folder_id != current_folder_id) {
+                alert("New folder: " + data.current_folder.name);
+                table = $("table#now_playing");
+                $("tr.now_playing").remove();
+
+                $.each(data.now_playing, function(i, item) {
+                    row = '<tr class="now_playing';
+                    if (item.now_playing) {
+                        row += ' success';
+                    }
+                    row += '" data-songid="' + item.id + '">';
+                    row += '<td class="button btn-xs btn-block skip_button info"';
+                    row += ' data-songid="' + item.id + '">' + item.skipped + '</td>';
+                    row += '<td>' + item.filename + '</td>';
+                    row += '</tr>';
+                    table.append(row);
+                });
+                $(".skip_button").click(skip_click);
+
+                current_folder_id = new_folder_id;
+            }
+            new_song_id = data.current_song.id
+            if (new_song_id != current_song_id) {
+                $("tr[data-songid="+current_song_id+"]").removeClass("success");
+                $("tr[data-songid="+new_song_id+"]").addClass("success");
+                current_song_id = new_song_id;
+                //alert("New song: " + data.current_song.filename + "; new song id: " + new_song_id);
+            }
+        });
+    }, 1000);
 });
 </script>
 {% endblock %}   

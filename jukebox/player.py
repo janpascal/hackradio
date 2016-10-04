@@ -8,6 +8,7 @@ import threading
 import time
 
 import shout
+from shout import ShoutException
 from django.conf import settings
 
 BITRATE="160k"
@@ -32,7 +33,6 @@ class IcecastPlayer:
 #   shout.SHOUT_AI_CHANNELS, shout.SHOUT_AI_QUALITY)
 
         self.shout.format = b"mp3"
-        self.shout.open()
 
     def close(self):
         self.shout.close()
@@ -40,30 +40,35 @@ class IcecastPlayer:
     def _play_thread(self, filename):
         total = 0
         st = time.time()
-        print(u"Playing {} to icecast server".format(filename))
-        f = open(filename)
+        print("Playing {} to icecast server".format(filename))
+        try:
+            f = open(filename)
 
-        if not self.shout.get_connected():
 # FIXME race condition
             self.shout.open()
 
-        self.shout.set_metadata({b'song': filename.encode('ascii', 'ignore')})
+            self.shout.set_metadata({b'song': filename.encode('ascii', 'ignore')})
 
-        nbuf = f.read(4096)
-        while 1:
-            buf = nbuf
             nbuf = f.read(4096)
-            total = total + len(buf)
-            if len(buf) == 0:
-                break
-            self.shout.send(buf)
-            self.shout.sync()
-        f.close()
-        
-        et = time.time()
-        br = total*0.008/(et-st)
-        print "Sent %d bytes in %d seconds (%f kbps)" % (total, et-st, br)
-        self.playing = False
+            while 1:
+                buf = nbuf
+                nbuf = f.read(4096)
+                total = total + len(buf)
+                if len(buf) == 0:
+                    break
+                self.shout.send(buf)
+                self.shout.sync()
+            f.close()
+            
+            et = time.time()
+            br = total*0.008/(et-st)
+            print "Sent %d bytes in %d seconds (%f kbps)" % (total, et-st, br)
+        except ShoutException as e:
+            print("Exception during play, sleeping for one second")
+            time.sleep(1.0)
+        finally:
+            self.playing = False
+            self.shout.close()
 
     def _fake_play_thread(self, filename):
         time.sleep(30)

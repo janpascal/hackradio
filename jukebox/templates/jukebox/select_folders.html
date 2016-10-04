@@ -3,16 +3,16 @@
 {% block title %}Hack Radio{% endblock %}   
 {% block content %}
 
-<h1>Select albums</h1>
+<h1>Select folders</h1>
 
 <table id="tree" data-path="">
     <thead>
-    <tr><th>Album path</th></tr>
+    <tr><th>Folder path</th></tr>
     </thead>
     <tbody>
         {% for root in roots %}
-        <tr data-tt-id="{{ root }}" data-tt-branch="true">
-            <td><span class="folder">{{ root }}</span></td>
+        <tr data-tt-id="{{ root.id }}" data-tt-branch="true">
+            <td><span class="folder">{{ root.name }}</span></td>
         </tr>
         {% endfor %}
     </tbody>
@@ -26,7 +26,9 @@ $(document).ready( function() {
         root_id = root.id;
         $.get('/jukebox/subdirs/' + root_id, function(data){
             rows = ""
+            //alert(data.children);
             $.each(data.children, function(i, item) {
+                //alert(item)
                 rows = rows + 
                     "<tr data-tt-id='" + item.id + "' " +
                     "data-tt-parent-id='" + root_id + "' " + 
@@ -55,7 +57,7 @@ $(document).ready( function() {
     $(document).on("mousedown", "#tree tbody tr", function() {
         $("tr.selected").removeClass("selected");
         $(this).addClass("selected");
-        $.get("/jukebox/album/" + $(this).attr("data-tt-id") + "/select",
+        $.get("/jukebox/folder/" + $(this).attr("data-tt-id") + "/select",
                 function(data) {
                 });
     });
