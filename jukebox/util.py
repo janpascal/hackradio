@@ -59,6 +59,7 @@ def recurse_import_dir(root_path, parent):
             found_something = found_something or found_in_subtree
         if os.path.isfile(disk_path) and f.endswith(".mp3"):
             print("Importing song {}".format(disk_path))
+            folder.selectable = True
             found_something = True
             song,_ = Song.objects.get_or_create(filename=f, folder=folder)
             song.save()
@@ -67,6 +68,8 @@ def recurse_import_dir(root_path, parent):
         print("Removing folder without any songs in it: {}".format(root_path))
         print("{}, {}, {}".format(folder_is_new, found_something, songs))
         folder.delete()
+    else:
+        folder.save()
 
     return found_something
 

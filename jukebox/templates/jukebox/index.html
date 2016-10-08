@@ -4,46 +4,160 @@
 
 {% block content %}
 
-<h1>Now Playing</h1>
-Current album: {{ current_folder.disk_path }}<br>
-Current song: {{ current_song.filename }}<br>
+<h1>Now Playing: <span id="now_playing_title"></span></h1>
 
 <table id="now_playing" class="table table-striped">
     <tr>
-        <th width="5%">Skip</th>
+        <th width="5%"></th>
         <th>Filename</th>
+        <!-- Filled by AJAX -->
     </tr>
-    {% for song in now_playing %}
-        <tr class="{% if song.now_playing %}success{% endif %} now_playing" data-songid="{{ song.id }}">
-        <td class="button btn-xs btn-block skip_button info" data-songid="{{ song.id }}">{{ song.skipped }}</td>
-        <td>{{ song.filename }}</td>
-        </tr>
-    {% endfor %}
 </table>
 
 <h1>Coming Up</h1>
-<table class="table table-striped">
-    <tr><th>Folder path</th></tr>
-    {% for folder in queue %}
-    <tr>
-    <td>{{ folder.name }}</td>
-    </tr>
-    {% endfor %}
+<table id="queue" class="table table-striped">
+    <tr><th colspan="3" width="5%"></th><th>Folder path</th></tr>
+    <!-- Filled by AJAX -->
 </table>
 
 <script type="text/javascript">
 function skip_click(event) {
-    songid = $(this).attr('data-songid');
+    songid = $(this).parent().attr('data-songid');
     $.get('/jukebox/song/' + songid + '/skip', function(data){
         //alert("Skipped song " + songid);
-        $("td[data-songid="+songid+"]").html("True");
+        //$("td[data-songid="+songid+"]").html("True");
         //$(this).html("True");
+        force_update = true;
+        update_now_playing();
     });
 }
+
+function enable_click(event) {
+    songid = $(this).parent().attr('data-songid');
+    $.get('/jukebox/song/' + songid + '/reenable', function(data){
+        force_update = true;
+        update_now_playing();
+    });
+}
+
+function move_folder_up(event) {
+    folderid = $(this).parent().attr('data-folderid');
+    $.get('/jukebox/folder/' + folderid + '/moveup', function(data){
+        //alert("Skipped song " + songid);
+        update_queue();
+    });
+}
+
+function move_folder_down(event) {
+    folderid = $(this).parent().attr('data-folderid');
+    $.get('/jukebox/folder/' + folderid + '/movedown', function(data){
+        //alert("Skipped song " + songid);
+        update_queue();
+    });
+}
+
+function deselect_folder(event) {
+    folderid = $(this).parent().attr('data-folderid');
+    $.get('/jukebox/folder/' + folderid + '/deselect', function(data){
+        //alert("Skipped song " + songid);
+        update_queue();
+    });
+}
+
+function update_now_playing() {
+    $.get('/jukebox/now_playing', function(data){
+        new_folder_id = data.current_folder.id
+        if (force_update || new_folder_id != current_folder_id) {
+            force_update = false;
+            // alert("New folder: " + data.current_folder.name);
+            // alert(data.now_playing);
+            table = $("table#now_playing");
+            $("tr.now_playing").remove();
+
+            $.each(data.now_playing, function(i, item) {
+                row = '<tr class="now_playing';
+                if (item.now_playing) {
+                    row += ' success';
+                }
+                row += '" data-songid="' + item.id + '">';
+                //row += '<td class="button btn-xs btn-block skip_button info"';
+                //row += ' data-songid="' + item.id + '">' + item.skipped + '</td>';
+                row += '<td class="';
+                if (item.skipped) {
+                    row += 'enable';
+                } else {
+                    row += 'skip';
+                }
+                row += '">';
+                row += '<a href="#"><span class="glyphicon ';
+                if (item.skipped) {
+                    row += 'glyphicon-plus';
+                } else {
+                    row += 'glyphicon-remove';
+                }
+                row += '" aria-hidden="true"></span></a></td>';
+                row += '<td>';
+                if (item.skipped) { row += "<s>"; }
+                row += item.filename;
+                if (item.skipped) { row += "</s>"; }
+                row += '</td>';
+                row += '</tr>';
+                table.append(row);
+            });
+            $("td.skip").click(skip_click);
+            $("td.enable").click(enable_click);
+            $("#now_playing_title").html(data.current_folder.disk_path);
+
+            current_folder_id = new_folder_id;
+
+            // Queue probably changed, too. Don't wait for timer
+            update_queue();
+        }
+        new_song_id = data.current_song.id
+        if (new_song_id != current_song_id) {
+            $("tr[data-songid="+current_song_id+"]").removeClass("success");
+            $("tr[data-songid="+new_song_id+"]").addClass("success");
+            current_song_id = new_song_id;
+            //alert("New song: " + data.current_song.filename + "; new song id: " + new_song_id);
+        }
+    });
+}
+
+function update_queue() {
+    $.get('/jukebox/json/queue', function(data){
+        new_queue_hash = data.hash
+        if (new_queue_hash != current_queue_hash) {
+            //alert("Queue changed");
+            table = $("table#queue");
+            $("tr.queued_folder").remove();
+
+            $.each(data.queue, function(i, item) {
+                row = '<tr class="queued_folder" data-folderid="' + item.id + '">';
+                row += '<td class="move_up"><a href="#"><span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span></a></td>';
+                row += '<td class="move_down"><a href="#"><span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span></a></td>';
+                row += '<td class="remove"><a href="#"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></td>';
+                row += '<td>' + item.name + '</td>';
+                row += '</tr>';
+                table.append(row);
+            });
+            $("td.move_up").click(move_folder_up);
+            $("td.move_down").click(move_folder_down);
+            $("td.remove").click(deselect_folder);
+            current_queue_hash = new_queue_hash;
+        }
+    });
+}
+
 
 $(document).ready( function() {
     current_folder_id = -1
     current_song_id = -1
+    current_queue_hash = ""
+    force_update = false;
+
+    update_now_playing();
+    update_queue();
+
     $(".skip_button").click(function(event) {
         songid = $(this).attr('data-songid');
         $.get('/jukebox/song/' + songid + '/skip', function(data){
@@ -52,39 +166,9 @@ $(document).ready( function() {
             //$(this).html("True");
         });
     });
-    setInterval(function() {
-        $.get('/jukebox/now_playing', function(data){
-            new_folder_id = data.current_folder.id
-            if (new_folder_id != current_folder_id) {
-                alert("New folder: " + data.current_folder.name);
-                table = $("table#now_playing");
-                $("tr.now_playing").remove();
 
-                $.each(data.now_playing, function(i, item) {
-                    row = '<tr class="now_playing';
-                    if (item.now_playing) {
-                        row += ' success';
-                    }
-                    row += '" data-songid="' + item.id + '">';
-                    row += '<td class="button btn-xs btn-block skip_button info"';
-                    row += ' data-songid="' + item.id + '">' + item.skipped + '</td>';
-                    row += '<td>' + item.filename + '</td>';
-                    row += '</tr>';
-                    table.append(row);
-                });
-                $(".skip_button").click(skip_click);
-
-                current_folder_id = new_folder_id;
-            }
-            new_song_id = data.current_song.id
-            if (new_song_id != current_song_id) {
-                $("tr[data-songid="+current_song_id+"]").removeClass("success");
-                $("tr[data-songid="+new_song_id+"]").addClass("success");
-                current_song_id = new_song_id;
-                //alert("New song: " + data.current_song.filename + "; new song id: " + new_song_id);
-            }
-        });
-    }, 1000);
+    setInterval(update_now_playing, 1000);
+    setInterval(update_queue, 5000);
 });
 </script>
 {% endblock %}   

@@ -10,9 +10,11 @@ class Folder(OrderedModel):
     name = models.CharField("name", max_length=4096)
     disk_path = models.CharField("disk_path", max_length=4096, unique=True)
     parent = models.ForeignKey('self', null=True, related_name="children")
-    #selectable = models.BooleanField("selectable", default=False)
+    selectable = models.BooleanField("selectable", default=False)
     selected = models.BooleanField("selected", default=False)
     now_playing = models.BooleanField(default=False)
+
+    order_with_respect_to = ['selected']
 
     def __str__(self):
         return self.disk_path

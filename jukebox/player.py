@@ -17,6 +17,7 @@ class IcecastPlayer:
     def __init__(self):
         self.playing = False
         self.shout = shout.Shout()
+        self.should_stop = False
 
         self.shout.host = settings.JUKEBOX_SHOUT_HOST
         self.shout.port = settings.JUKEBOX_SHOUT_PORT
@@ -50,7 +51,7 @@ class IcecastPlayer:
             self.shout.set_metadata({b'song': filename.encode('ascii', 'ignore')})
 
             nbuf = f.read(4096)
-            while 1:
+            while not self.should_stop:
                 buf = nbuf
                 nbuf = f.read(4096)
                 total = total + len(buf)
@@ -58,6 +59,11 @@ class IcecastPlayer:
                     break
                 self.shout.send(buf)
                 self.shout.sync()
+            if self.should_stop:
+                delay = self.shout.delay()
+                if delay > 0:
+                    print("Delaying for {} milleseconds before starting next stream".format(delay))
+                    time.sleep(delay / 1000.0)
             f.close()
             
             et = time.time()
@@ -65,10 +71,12 @@ class IcecastPlayer:
             print "Sent %d bytes in %d seconds (%f kbps)" % (total, et-st, br)
         except ShoutException as e:
             print("Exception during play, sleeping for one second")
+            print(e)
             time.sleep(1.0)
         finally:
             self.playing = False
             self.shout.close()
+        print("Finished player._play_thread()")
 
     def _fake_play_thread(self, filename):
         time.sleep(30)
@@ -78,12 +86,16 @@ class IcecastPlayer:
         #self._thread = threading.Thread(target=self._fake_play_thread, args=(filename,))
         self._thread = threading.Thread(target=self._play_thread, args=(filename,))
         self.playing = True
+        self.should_stop = False
         self._thread.start()
 
     def is_playing(self):
         return self.playing
 
     def stop(self):
-        self._process.terminate()
+        self.should_stop = True
+        while self.playing:
+            # FIXME timeout on this wait
+            time.sleep(0.1)
         self.playing = False
-        self._process = None
+        self._thread = None

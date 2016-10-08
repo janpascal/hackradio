@@ -19,27 +19,76 @@
 </table>
 
 <script type="text/javascript">
+
+function toggle_folder(event) {
+    folderid = $(this).parent().parent().attr('data-tt-id');
+    //alert("Selecting folder " + folderid);
+    $.get('/jukebox/folder/' + folderid + '/toggle', function(data){
+        row = $("tr[data-tt-id="+folderid+"]");
+        if (data.selected) {
+            row.addClass("selected");
+        } else {
+            row.removeClass("selected");
+        }
+    });
+}
+
+//function deselect_folder(event) {
+//    folderid = $(this).parent().parent().attr('data-tt-id');
+//    //alert("Deselecting folder " + folderid);
+//    $.get('/jukebox/folder/' + folderid + '/deselect', function(data){
+//        element = $("tr[data-tt-id="+folderid+"] td span.deselect")
+//        element.removeClass("deselect");
+//        element.find("span").removeClass("glyphicon-remove");
+//        element.addClass("select");
+//        element.find("span").addClass("glyphicon-plus");
+//        row = element.parent().parent();
+//        row.removeClass("info");
+//        //update_queue();
+//    });
+//}
+
+function load_children(root) {
+    root_id = root.id;
+    $.get('/jukebox/subdirs/' + root_id, function(data){
+        rows = ""
+        //alert(data.children);
+        $.each(data.children, function(i, item) {
+            //alert(item)
+            row = 
+                "<tr data-tt-id='" + item.id + "' " +
+                "data-tt-parent-id='" + root_id + "' ";
+            if (item.selected) {
+                row += 'class="selected" ';
+            }
+            row += "data-tt-branch='true'>";
+            row += '<td>';
+//            row += '<span class="';
+//            if (item.selected) {
+//                row += 'deselect';
+//            } else if (item.selectable) {
+//                row += 'select';
+//            }
+//            row += '">';
+//            row += '<span class="glyphicon ';
+//            if (item.selected) {
+//                row += 'glyphicon-remove';
+//            } else if (item.selectable) {
+//                row += 'glyphicon-plus';
+//            }
+//            row += '" aria-hidden="true"></span></span>';
+            row += "<span class='folder'>" + item.name + "</span></td>"; 
+            row += "</tr>";
+            rows += row
+        });
+
+        table = $("#tree");
+        table.treetable("loadBranch", root, rows);
+    });
+}
+
 $(document).ready( function() {
     var table = $("#tree");
-
-    function load_children(root) {
-        root_id = root.id;
-        $.get('/jukebox/subdirs/' + root_id, function(data){
-            rows = ""
-            //alert(data.children);
-            $.each(data.children, function(i, item) {
-                //alert(item)
-                rows = rows + 
-                    "<tr data-tt-id='" + item.id + "' " +
-                    "data-tt-parent-id='" + root_id + "' " + 
-                    "data-tt-branch='true'>" +
-                    "<td><input type='checkbox'></td>" + 
-                    "<td><span class='folder'>" + item.name + "</span></td>" + 
-                    "</tr>";
-            });
-            table.treetable("loadBranch", root, rows);
-        });
-    }
 
     table.treetable({
         expandable: true,
@@ -54,13 +103,22 @@ $(document).ready( function() {
         }
     });
 
-    $(document).on("mousedown", "#tree tbody tr", function() {
-        $("tr.selected").removeClass("selected");
-        $(this).addClass("selected");
-        $.get("/jukebox/folder/" + $(this).attr("data-tt-id") + "/select",
-                function(data) {
-                });
-    });
+    $(document).on("mousedown", "span.folder", toggle_folder);
+
+    {% for root in roots %}
+        table.treetable("expandNode", "{{ root.id }}");
+    {% endfor %}
+//    $("span.select").click(select_folder);
+//    $("span.deselect").click(deselect_folder);
+
+
+//    $(document).on("mousedown", "#tree tbody tr", function() {
+//        $("tr.selected").removeClass("selected");
+//        $(this).addClass("selected");
+//        $.get("/jukebox/folder/" + $(this).attr("data-tt-id") + "/select",
+//                function(data) {
+//                });
+//    });
 
 });
 </script>

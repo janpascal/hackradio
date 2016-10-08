@@ -100,6 +100,7 @@ JUKEBOX_SHOUT_URL = config.get('shout', 'JUKEBOX_SHOUT_URL')
 JUKEBOX_SHOUT_PUBLIC = config.getint('shout', 'JUKEBOX_SHOUT_PUBLIC')
 
 JUKEBOX_ROOT_DIR = config.get('shout', 'JUKEBOX_ROOT_DIR')
+JUKEBOX_STREAM_URL = config.get('shout', 'JUKEBOX_STREAM_URL')
 
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases

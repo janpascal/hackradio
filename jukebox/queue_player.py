@@ -7,9 +7,10 @@ import string
 import threading
 import time
 
-from player import IcecastPlayer
+from django.core.exceptions import ObjectDoesNotExist
 
 from models import Folder, Song
+from player import IcecastPlayer
 
 player = IcecastPlayer()
 player_thread = None
@@ -35,6 +36,10 @@ def _play_thread():
             player.play(song.disk_path())
             while player.is_playing():
                 time.sleep(0.1)
+                del song.skipped
+                if song.skipped:
+                    player.stop()
+                    break
             song.now_playing = False
             song.save()
 
@@ -59,8 +64,13 @@ def is_playing():
 def now_playing():
     if not is_playing():
         return [], None, None
-    current_folder = Folder.objects.get(now_playing=True)
-    current_song = Song.objects.get(now_playing=True)
+    current_folder = None
+    current_song = None
+    try:
+        current_folder = Folder.objects.get(now_playing=True)
+        current_song = Song.objects.get(now_playing=True)
+    except ObjectDoesNotExist:
+        pass
     if current_folder:
         song_list = current_folder.songs.all()
     else:

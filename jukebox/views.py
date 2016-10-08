@@ -2,11 +2,13 @@
 
 from __future__ import unicode_literals
 
+import hashlib
 import os
 import os.path
 
 from django.conf import settings
 from django.core import serializers
+from django.core.exceptions import ObjectDoesNotExist
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -22,16 +24,9 @@ from util import locate, import_collection
 # Create your views here.
 
 def index(request):
-    queue = Folder.objects.filter(selected=True).order_by('order')
-    now_playing,current_folder,current_song = queue_player.now_playing()
     context = {
-        "now_playing": [model_to_dict(s) for s in now_playing],
-        "current_folder": model_to_dict(current_folder) if current_folder is not None else None,
-        "current_song": model_to_dict(current_song) if current_song is not None else None,
-        "queue": [model_to_dict(f) for f in queue]
+        "stream_url": settings.JUKEBOX_STREAM_URL
     }
-    #print(u"index context: {}".format(context))
-        
     return render(request, "jukebox/index.html", context)
 
 def now_playing(request):
@@ -39,22 +34,43 @@ def now_playing(request):
     context = {
         "now_playing": [model_to_dict(s) for s in now_playing],
         "current_folder": model_to_dict(current_folder) if current_folder is not None else None,
-        "current_song": model_to_dict(current_song) if current_song is not None else None,
+        "current_song": model_to_dict(current_song) if current_song is not None else None
     }
     #print(u"index context: {}".format(context))
         
     return JsonResponse(context)
-    pass
+
+def json_queue(request):
+    queue = Folder.objects.filter(selected=True).order_by('order')
+    try:
+        current_folder = Folder.objects.get(now_playing=True)
+    except ObjectDoesNotExist:
+        current_folder = None
+    if queue_player.is_playing() and len(queue)>0 and current_folder == queue[0]:
+        # Do not show currently playing folder in queue
+        queue = queue[1:]
+    queue_hash = hashlib.md5("".join([f.disk_path.encode('ascii','ignore') for f in queue])).hexdigest()
+    context = {
+        "queue": [model_to_dict(f) for f in queue],
+        "hash": queue_hash
+    }
+        
+    return JsonResponse(context)
 
 def start(request):
     queue_player.start()
     return redirect("index")
 
 def skip_song(request, song_id):
-    print("song_id {}".format(song_id))
     song = Song.objects.get(pk=song_id)
-    print(u"Song: {}".format(song))
     song.skipped = True
+    song.save()
+
+    return HttpResponse("OK")
+
+def reenable_song(request, song_id):
+    song = Song.objects.get(pk=song_id)
+    song.skipped = False
     song.save()
 
     return HttpResponse("OK")
@@ -66,14 +82,25 @@ def folder_subdirs(request, folder_id):
     #print("Returning children: {}".format(children))
     return JsonResponse({"children":children})
 
-
-def select_folder(request, folder_id):
+def toggle_folder(request, folder_id):
     folder = Folder.objects.get(pk=folder_id)
-    folder.selected = True
+    #print("Toggling folder {} ({})".format(folder.name, folder.id))
+    folder.selected = folder.selectable and not folder.selected
     folder.save()
+
+    return JsonResponse({"selected": folder.selected})
+
+def move_folder_up(request, folder_id):
+    folder = Folder.objects.get(pk=folder_id)
+    folder.up()
 
     return HttpResponse("OK")
 
+def move_folder_down(request, folder_id):
+    folder = Folder.objects.get(pk=folder_id)
+    folder.down()
+
+    return HttpResponse("OK")
 
 def select_folders(request):
     roots = Folder.objects.filter(parent=None).all()
