@@ -13,6 +13,7 @@ from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.views import generic
 from django.views.generic.edit import FormView
 
@@ -82,6 +83,10 @@ def folder_subdirs(request, folder_id):
     #print("Returning children: {}".format(children))
     return JsonResponse({"children":children})
 
+def skip_current_folder(request):
+    queue_player.skip_current_folder()
+    return HttpResponse("OK")
+
 def toggle_folder(request, folder_id):
     folder = Folder.objects.get(pk=folder_id)
     #print("Toggling folder {} ({})".format(folder.name, folder.id))
@@ -112,7 +117,7 @@ def select_folders(request):
 class ImportCollectionView(FormView):
     template_name = 'jukebox/import_collection.html'
     form_class = ImportCollectionForm
-    success_url = "/"
+    success_url = '/jukebox/select_folders' # reverse('select_folders')
 
     def form_valid(self, form):
         root_dir = form.cleaned_data['root_dir']

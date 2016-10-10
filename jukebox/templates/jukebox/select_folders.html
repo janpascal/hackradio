@@ -105,9 +105,10 @@ $(document).ready( function() {
 
     $(document).on("mousedown", "span.folder", toggle_folder);
 
-    {% for root in roots %}
-        table.treetable("expandNode", "{{ root.id }}");
-    {% endfor %}
+//    {% for root in roots %}
+//        table.treetable("expandNode", "{{ root.id }}");
+//    {% endfor %}
+
 //    $("span.select").click(select_folder);
 //    $("span.deselect").click(deselect_folder);
 

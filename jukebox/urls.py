@@ -20,6 +20,7 @@ urlpatterns = [
     url(r'^folder/(?P<folder_id>[0-9]*)/toggle$', views.toggle_folder, name='toggle_folder'),
     url(r'^folder/(?P<folder_id>[0-9]*)/moveup$', views.move_folder_up, name='move_folder_up'),
     url(r'^folder/(?P<folder_id>[0-9]*)/movedown$', views.move_folder_down, name='move_folder_down'),
+    url(r'^folder/skipcurrent$', views.skip_current_folder, name='skip_current_folder'),
     url(r'^subdirs/(?P<folder_id>[0-9]*)$', views.folder_subdirs, name="folder_subdirs"),
     #url(r'^tweet/job/create$', views.create_job, name='create_job'),
     #url(r'^job/create$', views.create_job, name='create_job'),

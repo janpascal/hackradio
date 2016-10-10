@@ -16,9 +16,11 @@ BITRATE="160k"
 class IcecastPlayer:
     def __init__(self):
         self.playing = False
-        self.shout = shout.Shout()
         self.should_stop = False
+        self.stopped_event = threading.Event()
+        self._thread = None
 
+        self.shout = shout.Shout()
         self.shout.host = settings.JUKEBOX_SHOUT_HOST
         self.shout.port = settings.JUKEBOX_SHOUT_PORT
         self.shout.user = settings.JUKEBOX_SHOUT_USER
@@ -28,7 +30,7 @@ class IcecastPlayer:
         self.shout.genre =settings.JUKEBOX_SHOUT_GENRE
         self.shout.url = settings.JUKEBOX_SHOUT_URL
         self.shout.public = settings.JUKEBOX_SHOUT_PUBLIC
-
+    
 # self.shout.audio_info = { 'key': 'val', ... }
 #  (keys are shout.SHOUT_AI_BITRATE, shout.SHOUT_AI_SAMPLERATE,
 #   shout.SHOUT_AI_CHANNELS, shout.SHOUT_AI_QUALITY)
@@ -45,7 +47,6 @@ class IcecastPlayer:
         try:
             f = open(filename)
 
-# FIXME race condition
             self.shout.open()
 
             self.shout.set_metadata({b'song': filename.encode('ascii', 'ignore')})
@@ -59,11 +60,13 @@ class IcecastPlayer:
                     break
                 self.shout.send(buf)
                 self.shout.sync()
+
             if self.should_stop:
                 delay = self.shout.delay()
                 if delay > 0:
                     print("Delaying for {} milleseconds before starting next stream".format(delay))
                     time.sleep(delay / 1000.0)
+
             f.close()
             
             et = time.time()
@@ -74,19 +77,25 @@ class IcecastPlayer:
             print(e)
             time.sleep(1.0)
         finally:
-            self.playing = False
             self.shout.close()
+            self._thread = None
+            self.stopped_event.set()
+            self.playing = False
         print("Finished player._play_thread()")
 
     def _fake_play_thread(self, filename):
         time.sleep(30)
-        self.playing = False
+        self.stopped_event.set()
 
     def play(self, filename):
+        if self.is_playing():
+            raise "Cannot start new stream, already playing"
+
         #self._thread = threading.Thread(target=self._fake_play_thread, args=(filename,))
         self._thread = threading.Thread(target=self._play_thread, args=(filename,))
         self.playing = True
         self.should_stop = False
+        self.stopped_event.clear()
         self._thread.start()
 
     def is_playing(self):
@@ -94,8 +103,7 @@ class IcecastPlayer:
 
     def stop(self):
         self.should_stop = True
-        while self.playing:
-            # FIXME timeout on this wait
-            time.sleep(0.1)
-        self.playing = False
-        self._thread = None
+        print("Send player thread signal to stop, waiting at most 30 seconds for it to actually stop...")
+        stopped = self.stopped_event.wait(30.0)
+        if not stopped:
+            print("Did NOT receive message that thread actually stopped, will cause trouble later!")

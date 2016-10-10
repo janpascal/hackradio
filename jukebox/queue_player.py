@@ -15,7 +15,11 @@ from player import IcecastPlayer
 player = IcecastPlayer()
 player_thread = None
 
+skip_rest_of_current_folder = False
+
 def _play_thread():
+    global skip_rest_of_current_folder
+
     while(True):
         current_folder = Folder.objects.filter(selected=True).order_by('order').first()
         print(u"Current folder: {}".format(current_folder))
@@ -33,15 +37,19 @@ def _play_thread():
             print(u"Playing {}".format(song.filename))
             song.now_playing = True
             song.save()
+
             player.play(song.disk_path())
-            while player.is_playing():
-                time.sleep(0.1)
+            while not player.stopped_event.wait(0.1):
                 del song.skipped
-                if song.skipped:
+                if song.skipped or skip_rest_of_current_folder:
                     player.stop()
                     break
             song.now_playing = False
             song.save()
+
+            if skip_rest_of_current_folder:
+                skip_rest_of_current_folder = False
+                break
 
         current_folder.now_playing = False
         current_folder.save()
@@ -60,6 +68,10 @@ def is_playing():
     global player_thread
 
     return player_thread is not None
+
+def skip_current_folder():
+    global skip_rest_of_current_folder
+    skip_rest_of_current_folder = True
 
 def now_playing():
     if not is_playing():
