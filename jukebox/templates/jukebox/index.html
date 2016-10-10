@@ -24,7 +24,7 @@
 <script type="text/javascript">
 
 function skip_current_folder_click(event) {
-    $.get('/jukebox/folder/skipcurrent', function(data){
+  $.get(Urls['jukebox:skip_current_folder'](), function(data){
         force_update = true;
         update_now_playing();
     });
@@ -32,7 +32,7 @@ function skip_current_folder_click(event) {
 
 function skip_click(event) {
     songid = $(this).parent().attr('data-songid');
-    $.get('/jukebox/song/' + songid + '/skip', function(data){
+    $.get(Urls['jukebox:skip_song'](songid), function(data){
         force_update = true;
         update_now_playing();
     });
@@ -40,7 +40,7 @@ function skip_click(event) {
 
 function enable_click(event) {
     songid = $(this).parent().attr('data-songid');
-    $.get('/jukebox/song/' + songid + '/reenable', function(data){
+    $.get(Urls['jukebox:reenable_song'](songid), function(data){
         force_update = true;
         update_now_playing();
     });
@@ -48,30 +48,27 @@ function enable_click(event) {
 
 function move_folder_up(event) {
     folderid = $(this).parent().attr('data-folderid');
-    $.get('/jukebox/folder/' + folderid + '/moveup', function(data){
-        //alert("Skipped song " + songid);
+    $.get(Urls['jukebox:move_folder_up'](folderid), function(data){
         update_queue();
     });
 }
 
 function move_folder_down(event) {
     folderid = $(this).parent().attr('data-folderid');
-    $.get('/jukebox/folder/' + folderid + '/movedown', function(data){
-        //alert("Skipped song " + songid);
+    $.get(Urls['jukebox:move_folder_down'](folderid), function(data){
         update_queue();
     });
 }
 
 function deselect_folder(event) {
     folderid = $(this).parent().attr('data-folderid');
-    $.get('/jukebox/folder/' + folderid + '/deselect', function(data){
-        //alert("Skipped song " + songid);
+    $.get(Urls['jukebox:toggle_folder'](folderid), function(data){
         update_queue();
     });
 }
 
 function update_now_playing() {
-    $.get('/jukebox/now_playing', function(data){
+  $.get("{% url 'jukebox:now_playing' %}", function(data){
         new_folder_id = data.current_folder.id
         if (force_update || new_folder_id != current_folder_id) {
             force_update = false;
@@ -88,8 +85,6 @@ function update_now_playing() {
                     row += ' success';
                 }
                 row += '" data-songid="' + item.id + '">';
-                //row += '<td class="button btn-xs btn-block skip_button info"';
-                //row += ' data-songid="' + item.id + '">' + item.skipped + '</td>';
                 row += '<td class="';
                 if (item.skipped) {
                     row += 'enable';
@@ -132,7 +127,7 @@ function update_now_playing() {
 }
 
 function update_queue() {
-    $.get('/jukebox/json/queue', function(data){
+  $.get("{% url 'jukebox:json_queue' %}", function(data){
         new_queue_hash = data.hash
         if (new_queue_hash != current_queue_hash) {
             //alert("Queue changed");
@@ -165,15 +160,6 @@ $(document).ready( function() {
 
     update_now_playing();
     update_queue();
-
-    $(".skip_button").click(function(event) {
-        songid = $(this).attr('data-songid');
-        $.get('/jukebox/song/' + songid + '/skip', function(data){
-            //alert("Skipped song " + songid);
-            $("td[data-songid="+songid+"]").html("True");
-            //$(this).html("True");
-        });
-    });
 
     $(".skip_current_folder").click(skip_current_folder_click);
 
