@@ -3,3 +3,5 @@ db.sqlite3
 *.pyc
 hackradio/local.ini
 migrations
+django_debug.log
+

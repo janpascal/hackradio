@@ -22,6 +22,10 @@ def _play_thread():
 
     while(True):
         current_folder = Folder.objects.filter(selected=True).order_by('order').first()
+        if current_folder is None:
+            print("No albums queued, trying again later...")
+            time.sleep(30)
+            continue
         print(u"Current folder: {}".format(current_folder))
         current_folder.now_playing = True
         current_folder.save()

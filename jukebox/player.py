@@ -43,7 +43,7 @@ class IcecastPlayer:
     def _play_thread(self, filename):
         total = 0
         st = time.time()
-        print("Playing {} to icecast server".format(filename))
+        print("Playing {} to icecast server {}:{}".format(filename, self.shout.host, self.shout.port))
         try:
             f = open(filename)
 
@@ -77,7 +77,10 @@ class IcecastPlayer:
             print(e)
             time.sleep(1.0)
         finally:
-            self.shout.close()
+            try:
+                self.shout.close()
+            except:
+                pass
             self._thread = None
             self.stopped_event.set()
             self.playing = False
