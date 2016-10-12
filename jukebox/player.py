@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+import logging
 import sys
 import string
 import threading
@@ -9,16 +10,20 @@ import time
 
 import shout
 from shout import ShoutException
+
 from django.conf import settings
+
 
 BITRATE="160k"
 
 class IcecastPlayer:
     def __init__(self):
         self.playing = False
+        self.connected = False
         self.should_stop = False
         self.stopped_event = threading.Event()
         self._thread = None
+        self.logger = logging.getLogger(__name__)
 
         self.shout = shout.Shout()
         self.shout.host = settings.JUKEBOX_SHOUT_HOST
@@ -37,17 +42,30 @@ class IcecastPlayer:
 
         self.shout.format = b"mp3"
 
-    def close(self):
-        self.shout.close()
+    def connect(self):
+        if not self.connected or not self.shout.get_connected():
+            try:
+                self.shout.open()
+                self.connected = True
+            except Exception as e:
+                self.logger.warning(e)
+                return False
+        return True
+
+    def disconnect(self):
+        if self.connected and self.shout.get_connected():
+            try:
+                self.shout.close()
+            except Exception as e:
+                self.logger.warning(e)
+                self.connected = False
 
     def _play_thread(self, filename):
         total = 0
         st = time.time()
-        print("Playing {} to icecast server {}:{}".format(filename, self.shout.host, self.shout.port))
+        self.logger.info("Playing {} to icecast server {}:{}".format(filename, self.shout.host, self.shout.port))
         try:
             f = open(filename)
-
-            self.shout.open()
 
             self.shout.set_metadata({b'song': filename.encode('ascii', 'ignore')})
 
@@ -64,27 +82,23 @@ class IcecastPlayer:
             if self.should_stop:
                 delay = self.shout.delay()
                 if delay > 0:
-                    print("Delaying for {} milleseconds before starting next stream".format(delay))
+                    self.logger.info("Delaying for {} milleseconds before starting next stream".format(delay))
                     time.sleep(delay / 1000.0)
 
             f.close()
             
             et = time.time()
             br = total*0.008/(et-st)
-            print "Sent %d bytes in %d seconds (%f kbps)" % (total, et-st, br)
+            self.logger.info("Sent {} bytes in {} seconds ({} kbps)".format(total, et-st, br))
         except ShoutException as e:
-            print("Exception during play, sleeping for one second")
-            print(e)
+            self.logger.warning("Exception during play, sleeping for one second")
+            self.logger.warning(e)
             time.sleep(1.0)
         finally:
-            try:
-                self.shout.close()
-            except:
-                pass
             self._thread = None
             self.stopped_event.set()
             self.playing = False
-        print("Finished player._play_thread()")
+        self.logger.info("Finished player._play_thread()")
 
     def _fake_play_thread(self, filename):
         time.sleep(30)
@@ -106,7 +120,7 @@ class IcecastPlayer:
 
     def stop(self):
         self.should_stop = True
-        print("Send player thread signal to stop, waiting at most 30 seconds for it to actually stop...")
+        self.logger.info("Send player thread signal to stop, waiting at most 30 seconds for it to actually stop...")
         stopped = self.stopped_event.wait(30.0)
         if not stopped:
-            print("Did NOT receive message that thread actually stopped, will cause trouble later!")
+            self.logger.error("Did NOT receive message that thread actually stopped, will cause trouble later!")

@@ -19,6 +19,7 @@ skip_rest_of_current_folder = False
 
 def _play_thread():
     global skip_rest_of_current_folder
+    global player
 
     while(True):
         current_folder = Folder.objects.filter(selected=True).order_by('order').first()
@@ -29,7 +30,8 @@ def _play_thread():
         print(u"Current folder: {}".format(current_folder))
         current_folder.now_playing = True
         current_folder.save()
-        
+
+        player.connect()
         for song in current_folder.songs.all():
             del song.skipped
             if song.skipped:
