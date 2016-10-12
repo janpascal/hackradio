@@ -2,6 +2,5 @@ db.sqlite3
 .*.swp
 *.pyc
 hackradio/local.ini
-migrations
 django_debug.log
 
