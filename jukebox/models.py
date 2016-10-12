@@ -7,7 +7,7 @@ from django.db import models
 from ordered_model.models import OrderedModel
 
 class Folder(OrderedModel):
-    name = models.CharField("name", max_length=4096)
+    name = models.CharField("name", max_length=255)
     disk_path = models.CharField("disk_path", max_length=4096)
     parent = models.ForeignKey('self', null=True, related_name="children")
     selectable = models.BooleanField("selectable", default=False)
@@ -24,8 +24,7 @@ class Folder(OrderedModel):
         unique_together = ("parent", "name")
 
 class Song(models.Model):
-    #title = models.CharField(max_length=256)
-    filename = models.CharField(max_length=256)
+    filename = models.CharField(max_length=255)
     skipped = models.BooleanField(default=False)
     now_playing = models.BooleanField(default=False)
     folder = models.ForeignKey(Folder, on_delete=models.CASCADE, related_name="songs")
