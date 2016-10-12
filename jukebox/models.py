@@ -8,7 +8,7 @@ from ordered_model.models import OrderedModel
 
 class Folder(OrderedModel):
     name = models.CharField("name", max_length=4096)
-    disk_path = models.CharField("disk_path", max_length=4096, unique=True)
+    disk_path = models.CharField("disk_path", max_length=4096)
     parent = models.ForeignKey('self', null=True, related_name="children")
     selectable = models.BooleanField("selectable", default=False)
     selected = models.BooleanField("selected", default=False)
