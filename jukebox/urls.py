@@ -10,7 +10,6 @@ app_name = 'jukebox'
 urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^now_playing$', views.now_playing, name='now_playing'),
-    url(r'^start$', views.start, name='start'),
     url(r'^import_collection$', views.ImportCollectionView.as_view(), name='import_collection'),
     url(r'^select_folders$', views.select_folders, name='select_folders'),
     url(r'^now_playing$', views.select_folders, name='now_playing'),

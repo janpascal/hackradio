@@ -59,10 +59,6 @@ def json_queue(request):
         
     return JsonResponse(context)
 
-def start(request):
-    queue_player.start()
-    return redirect("index")
-
 def skip_song(request, song_id):
     song = Song.objects.get(pk=song_id)
     song.skipped = True
