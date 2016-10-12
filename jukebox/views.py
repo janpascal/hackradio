@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 
 import hashlib
+import logging
 import os
 import os.path
 
@@ -22,7 +23,7 @@ from forms import ImportCollectionForm
 import queue_player
 from util import locate, import_collection
 
-# Create your views here.
+logger = logging.getLogger(__name__)
 
 def index(request):
     context = {
@@ -37,7 +38,7 @@ def now_playing(request):
         "current_folder": model_to_dict(current_folder) if current_folder is not None else None,
         "current_song": model_to_dict(current_song) if current_song is not None else None
     }
-    #print(u"index context: {}".format(context))
+    #logger.info(u"index context: {}".format(context))
         
     return JsonResponse(context)
 
@@ -80,7 +81,7 @@ def folder_subdirs(request, folder_id):
     folder = Folder.objects.get(pk=folder_id)
     children = Folder.objects.filter(parent_id=folder_id).all()
     children = [model_to_dict(c) for c in children]
-    #print("Returning children: {}".format(children))
+    #logger.info("Returning children: {}".format(children))
     return JsonResponse({"children":children})
 
 def skip_current_folder(request):
@@ -89,7 +90,7 @@ def skip_current_folder(request):
 
 def toggle_folder(request, folder_id):
     folder = Folder.objects.get(pk=folder_id)
-    #print("Toggling folder {} ({})".format(folder.name, folder.id))
+    #logger.info("Toggling folder {} ({})".format(folder.name, folder.id))
     folder.selected = folder.selectable and not folder.selected
     folder.save()
 

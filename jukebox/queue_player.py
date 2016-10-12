@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+import logging
 import sys
 import string
 import threading
@@ -14,6 +15,7 @@ from player import IcecastPlayer
 
 player = IcecastPlayer()
 player_thread = None
+logger = logging.getLogger(__name__)
 
 skip_rest_of_current_folder = False
 
@@ -24,10 +26,10 @@ def _play_thread():
     while(True):
         current_folder = Folder.objects.filter(selected=True).order_by('order').first()
         if current_folder is None:
-            print("No albums queued, trying again later...")
+            logger.info("No albums queued, trying again later...")
             time.sleep(30)
             continue
-        print(u"Current folder: {}".format(current_folder))
+        logger.info(u"Current folder: {}".format(current_folder))
         current_folder.now_playing = True
         current_folder.save()
 
@@ -35,12 +37,12 @@ def _play_thread():
         for song in current_folder.songs.all():
             del song.skipped
             if song.skipped:
-                print(u"Skipping {}".format(song.filename))
+                logger.info(u"Skipping {}".format(song.filename))
                 song.skipped = False
                 song.save()
                 continue
 
-            print(u"Playing {}".format(song.filename))
+            logger.info(u"Playing {}".format(song.filename))
             song.now_playing = True
             song.save()
 
@@ -64,7 +66,7 @@ def _play_thread():
 def start():
     global player_thread
     if player_thread is None:
-        print("Starting queue player!")
+        logger.info("Starting queue player!")
         Folder.objects.filter(now_playing=True).update(now_playing=False)
         Song.objects.filter(now_playing=True).update(now_playing=False)
         player_thread = threading.Thread(target=_play_thread)
