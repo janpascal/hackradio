@@ -44,6 +44,7 @@ class IcecastPlayer:
 
     def connect(self):
         if not self.connected or not self.shout.get_connected():
+            self.logger.info("Trying to connect to server at {}:{}".format(self.shout.host, self.shout.port))
             try:
                 self.shout.open()
                 self.connected = True
@@ -107,6 +108,8 @@ class IcecastPlayer:
     def play(self, filename):
         if self.is_playing():
             raise "Cannot start new stream, already playing"
+        if self._thread is not None:
+            raise "Cannot start new stream, play thread already exists"
 
         #self._thread = threading.Thread(target=self._fake_play_thread, args=(filename,))
         self._thread = threading.Thread(target=self._play_thread, args=(filename,))
