@@ -4,7 +4,8 @@ import logging
 from threading import Thread
 import time
 
-logger =logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
+
 
 def startup():
     def _thread_func():

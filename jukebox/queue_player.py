@@ -18,12 +18,15 @@ player_thread = None
 logger = logging.getLogger(__name__)
 
 skip_rest_of_current_folder = False
+stop_playing = False
 
 def _play_thread():
     global skip_rest_of_current_folder
+    global stop_playing
     global player
+    global player_thread
 
-    while(True):
+    while not stop_playing:
         current_folder = Folder.objects.filter(selected=True).order_by('order').first()
         if current_folder is None:
             logger.info("No albums queued, trying again later...")
@@ -49,7 +52,7 @@ def _play_thread():
             player.play(song.disk_path())
             while not player.stopped_event.wait(0.1):
                 del song.skipped
-                if song.skipped or skip_rest_of_current_folder:
+                if song.skipped or skip_rest_of_current_folder or stop_playing:
                     player.stop()
                     break
             song.now_playing = False
@@ -59,18 +62,39 @@ def _play_thread():
                 skip_rest_of_current_folder = False
                 break
 
+            if stop_playing:
+                break
+
         current_folder.now_playing = False
         current_folder.save()
         current_folder.bottom()
 
+    player_thread = None
+
 def start():
     global player_thread
+    global skip_rest_of_current_folder
+    global stop_playing
     if player_thread is None:
         logger.info("Starting queue player!")
         Folder.objects.filter(now_playing=True).update(now_playing=False)
         Song.objects.filter(now_playing=True).update(now_playing=False)
         player_thread = threading.Thread(target=_play_thread)
+        skip_rest_of_current_folder = False
+        stop_playing = False
         player_thread.start()
+
+def stop():
+    global player_thread
+    global stop_playing
+    if player_thread is not None:
+        logger.info("Telling player thread to stop, waiting max 10 seconds until it stops")
+        stop_playing = True
+        count = 0
+        while player_thread is not None and count<10:
+            logger.info("Still waiting for player to stop...")
+            time.sleep(1)
+            count += 1
 
 def is_playing():
     global player_thread
