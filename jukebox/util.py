@@ -98,7 +98,7 @@ def convert_m4a_to_mp3(m4afile, mp3file):
 def convert_files(folder):
     for song in folder.songs.filter(convertable=True):
         logger.info("song.converted_path: {}".format(song.converted_path))
-        if not song.converted_path:
+        if not song.converted_path or not os.path.exists(song.converted_path):
             disk_path = song.disk_path()
             _,extension = os.path.splitext(disk_path)
             logger.info("Converting song {}".format(disk_path))
