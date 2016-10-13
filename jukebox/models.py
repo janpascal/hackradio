@@ -28,10 +28,17 @@ class Song(models.Model):
     skipped = models.BooleanField(default=False)
     now_playing = models.BooleanField(default=False)
     folder = models.ForeignKey(Folder, on_delete=models.CASCADE, related_name="songs")
-
+    convertable = models.BooleanField(default=False)
+    converted_path = models.CharField(max_length=4096, default="")
     
     def disk_path(self):
         return os.path.join(self.folder.disk_path, self.filename)
+
+    def mp3_path(self):
+        if self.converted_path:
+            return self.converted_path
+        else:
+            return os.path.join(self.folder.disk_path, self.filename)
 
     def __str__(self):
         return self.disk_path()

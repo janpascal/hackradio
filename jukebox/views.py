@@ -22,6 +22,7 @@ from models import Folder, Song
 from forms import ImportCollectionForm
 import queue_player
 from util import locate, import_collection
+import util
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +89,8 @@ def toggle_folder(request, folder_id):
     folder = Folder.objects.get(pk=folder_id)
     #logger.info("Toggling folder {} ({})".format(folder.name, folder.id))
     folder.selected = folder.selectable and not folder.selected
+    if folder.selected:
+        util.convert_files(folder)
     folder.save()
 
     return JsonResponse({"selected": folder.selected})

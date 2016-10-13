@@ -9,5 +9,6 @@ JUKEBOX_SHOUT_GENRE = Unknown
 JUKEBOX_SHOUT_URL = http://www.example.com
 JUKEBOX_SHOUT_PUBLIC = 1
 
-JUKEBOX_ROOT_DIR = /var/music
+JUKEBOX_CACHE_DIR = /var/music/cached
+
 JUKEBOX_STREAM_URL = http://www.example.com:8000/hackradio.mp3

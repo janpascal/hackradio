@@ -100,7 +100,7 @@ JUKEBOX_SHOUT_GENRE = config.get('shout', 'JUKEBOX_SHOUT_GENRE')
 JUKEBOX_SHOUT_URL = config.get('shout', 'JUKEBOX_SHOUT_URL')
 JUKEBOX_SHOUT_PUBLIC = config.getint('shout', 'JUKEBOX_SHOUT_PUBLIC')
 
-JUKEBOX_ROOT_DIR = config.get('shout', 'JUKEBOX_ROOT_DIR')
+JUKEBOX_CACHE_DIR = config.get('shout', 'JUKEBOX_CACHE_DIR')
 JUKEBOX_STREAM_URL = config.get('shout', 'JUKEBOX_STREAM_URL')
 
 # Database
