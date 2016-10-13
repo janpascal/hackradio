@@ -139,7 +139,7 @@ function update_queue() {
                 row += '<td class="move_up"><a href="#"><span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span></a></td>';
                 row += '<td class="move_down"><a href="#"><span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span></a></td>';
                 row += '<td class="remove"><a href="#"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></td>';
-                row += '<td>' + item.name + '</td>';
+                row += '<td>' + item.name + ' (' + item.disk_path + ')</td>';
                 row += '</tr>';
                 table.append(row);
             });
