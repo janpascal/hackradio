@@ -15,19 +15,17 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
-from django.views import generic
-from django.views.generic.edit import FormView
 
 from models import Folder, Song
-from forms import ImportCollectionForm
 import queue_player
-from util import locate, import_collection
 import util
 
 logger = logging.getLogger(__name__)
 
 def index(request):
+    roots = Folder.objects.filter(parent=None).all()
     context = {
+        "roots": roots,
         "stream_url": settings.JUKEBOX_STREAM_URL
     }
     return render(request, "jukebox/index.html", context)
@@ -39,7 +37,15 @@ def now_playing(request):
         "current_folder": model_to_dict(current_folder) if current_folder is not None else None,
         "current_song": model_to_dict(current_song) if current_song is not None else None
     }
-    #logger.info(u"index context: {}".format(context))
+    #logger.info(u"now_playing context: {}".format(context))
+        
+    return JsonResponse(context)
+
+def json_roots(request):
+    roots = Folder.objects.filter(parent=None)
+    context = {
+        "roots": [model_to_dict(r) for r in roots],
+    }
         
     return JsonResponse(context)
 
@@ -90,6 +96,7 @@ def toggle_folder(request, folder_id):
     #logger.info("Toggling folder {} ({})".format(folder.name, folder.id))
     folder.selected = folder.selectable and not folder.selected
     if folder.selected:
+        folder.bottom()
         util.convert_files(folder)
     folder.save()
 
@@ -107,21 +114,9 @@ def move_folder_down(request, folder_id):
 
     return HttpResponse("OK")
 
-def select_folders(request):
-    roots = Folder.objects.filter(parent=None).all()
-    context = {
-            "roots": roots
-            }
-    return render(request, "jukebox/select_folders.html", context)
-
-class ImportCollectionView(FormView):
-    template_name = 'jukebox/import_collection.html'
-    form_class = ImportCollectionForm
-    success_url = reverse_lazy('jukebox:select_folders')
-
-    def form_valid(self, form):
-        root_dir = form.cleaned_data['root_dir']
-        import_collection(root_dir)
-        return super(ImportCollectionView,self).form_valid(form)
-
+def import_collection(request):
+    root_dir = request.POST['root_dir']
+    logger.info("Importing collection from {}".format(root_dir))
+    util.import_collection(root_dir)
+    return HttpResponse("OK")
 
