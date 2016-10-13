@@ -1,0 +1,9 @@
+When you have non-ASCII characters in your directory or file names and your file
+system is, e.g. UTF-8 encoded, you need to do some configuration in
+/etc/apache2/envvars:
+
+
+export LANG='en_US.UTF-8'
+export LC_ALL='en_US.UTF-8'
+export LC_CTYPE='en_US.UTF-8'
+
