@@ -309,10 +309,13 @@ function load_children(root) {
             row = 
                 "<tr data-tt-id='" + item.id + "' " +
                 "data-tt-parent-id='" + root_id + "' ";
+            if (item.has_children) {
+                row += "data-tt-branch='true' ";
+            }
             if (item.selected) {
                 row += 'class="selected" ';
             }
-            row += "data-tt-branch='true'>";
+            row += ">";
             row += '<td>';
             if (item.selectable) {
                 row += '<span class="label label-info songs_button" data-folderid="' + item.id + '" data-toggle="popover" data-trigger="hover" title="Songs in ' + item.name + '" data-html="true" data-content="To be Filled In">Songs</span>'; 

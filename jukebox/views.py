@@ -41,14 +41,6 @@ def now_playing(request):
         
     return JsonResponse(context)
 
-def json_roots(request):
-    roots = Folder.objects.filter(parent=None)
-    context = {
-        "roots": [model_to_dict(r) for r in roots],
-    }
-        
-    return JsonResponse(context)
-
 def json_queue(request):
     queue = Folder.objects.filter(selected=True).order_by('order')
     try:
@@ -80,12 +72,31 @@ def reenable_song(request, song_id):
 
     return HttpResponse("OK")
 
+def json_roots(request):
+    roots = Folder.objects.filter(parent=None)
+    dict_roots = []
+    for r in roots:
+        d = model_to_dict(r)
+        d["has_children"] = r.children.exists()
+        dict_roots.append(d)
+
+    context = {
+        "roots": dict_roots,
+    }
+        
+    return JsonResponse(context)
+
 def folder_subdirs(request, folder_id):
     folder = Folder.objects.get(pk=folder_id)
     children = Folder.objects.filter(parent_id=folder_id).all()
-    children = [model_to_dict(c) for c in children]
-    #logger.info("Returning children: {}".format(children))
-    return JsonResponse({"children":children})
+    #children = [model_to_dict(c) for c in children]
+    dict_children = []
+    for c in children:
+        d = model_to_dict(c)
+        d["has_children"] = c.children.exists()
+        dict_children.append(d)
+    #logger.info("Returning children: {}".format(dict_children))
+    return JsonResponse({"children":dict_children})
 
 def skip_current_folder(request):
     queue_player.skip_current_folder()
