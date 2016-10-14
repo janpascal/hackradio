@@ -126,6 +126,14 @@ def move_folder_bottom(request, folder_id):
 
     return HttpResponse("OK")
 
+def folder_songs(request, folder_id):
+    folder = Folder.objects.get(pk=folder_id)
+    songs = folder.songs.all()
+    response  = {
+        "songs": [model_to_dict(s) for s in songs],
+    }
+    return JsonResponse(response)
+
 def import_collection(request):
     root_dir = request.POST['root_dir']
     logger.info("Importing collection from {}".format(root_dir))

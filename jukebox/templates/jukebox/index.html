@@ -180,6 +180,18 @@ function import_clicked(event) {
     return false;
 }
 
+function fill_song_popover(folderid) {
+    $.get(Urls['jukebox:folder_songs'](folderid), function(data){
+        content = ""
+        $.each(data.songs, function(i, song) {
+            content += "<p>" + song.filename + "</p>";
+        });
+        button = $(".songs_button[data-folderid='" + folderid + "']");
+
+        button.attr('data-content', content);
+    });
+}
+
 function update_now_playing() {
   $.get("{% url 'jukebox:now_playing' %}", function(data){
         if (data.current_folder == null) {
@@ -254,15 +266,20 @@ function update_queue() {
                 row += '<td class="remove"><a href="#"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></td>';
                 row += '<td class="move_down"><a href="#"><span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span></a></td>';
                 row += '<td class="move_bottom"><a href="#"><span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span></a></td>';
+		row += '<td><button type="button" class="btn btn-info songs_button" ';
+                row += 'data-folderid="' + item.id + '" data-toggle="popover" data-trigger="hover" ';
+                row += 'title="Songs in ' + item.name + '" data-html="true" data-content="To be Filled In">Songs</button></td>';
                 row += '<td>' + item.name + ' (' + item.disk_path + ')</td>';
                 row += '</tr>';
                 table.append(row);
+                fill_song_popover(item.id);
             });
             $("td.move_top").click(move_folder_top);
             $("td.move_up").click(move_folder_up);
             $("td.move_down").click(move_folder_down);
             $("td.move_bottom").click(move_folder_bottom);
             $("td.remove").click(deselect_folder);
+	    $('[data-toggle="popover"]').popover();
             current_queue_hash = new_queue_hash;
         }
     });
@@ -297,13 +314,21 @@ function load_children(root) {
             }
             row += "data-tt-branch='true'>";
             row += '<td>';
+            if (item.selectable) {
+                row += '<span class="label label-info songs_button" data-folderid="' + item.id + '" data-toggle="popover" data-trigger="hover" title="Songs in ' + item.name + '" data-html="true" data-content="To be Filled In">Songs</span>'; 
+                row += '&nbsp;&nbsp;';
+            }
             row += "<span class='folder'>" + item.name + "</span></td>"; 
             row += "</tr>";
-            rows += row
+            rows += row;
         });
 
         table = $("#tree");
         table.treetable("loadBranch", root, rows);
+        $.each(data.children, function(i, item) {
+            fill_song_popover(item.id);
+        });
+        $('span.songs_button[data-toggle="popover"]').popover();
     });
 }
 
