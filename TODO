@@ -1,0 +1,10 @@
+- more feedback on import
+- feedback when converting file
+- use some JavaSript template engine instead of composing the HTML by hand?
+
+Bugs
+
+- "Songs" button in "Select Folder" does not look right
+- If the first folder you select needs to be converted, it starts playing before
+  it is actually converted, which prevents the first song form being converted
+  properly
