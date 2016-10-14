@@ -153,9 +153,9 @@ function toggle_folder(event) {
     $.get(Urls['jukebox:toggle_folder'](folderid), function(data){
         row = $("tr[data-tt-id="+folderid+"]");
         if (data.selected) {
-            row.addClass("selected");
+            row.addClass("bg-info");
         } else {
-            row.removeClass("selected");
+            row.removeClass("bg-info");
         }
         update_queue()
     });
@@ -313,7 +313,7 @@ function load_children(root) {
                 row += "data-tt-branch='true' ";
             }
             if (item.selected) {
-                row += 'class="selected" ';
+                row += " class='bg-info' ";
             }
             row += ">";
             row += '<td>';
