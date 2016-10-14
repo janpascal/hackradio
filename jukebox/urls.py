@@ -16,8 +16,11 @@ urlpatterns = [
     url(r'^song/(?P<song_id>[0-9]+)/skip$', views.skip_song, name="skip_song"),
     url(r'^song/(?P<song_id>[0-9]+)/reenable$', views.reenable_song, name="reenable_song"),
     url(r'^folder/(?P<folder_id>[0-9]*)/toggle$', views.toggle_folder, name='toggle_folder'),
+    url(r'^folder/(?P<folder_id>[0-9]*)/movetop$', views.move_folder_top, name='move_folder_top'),
     url(r'^folder/(?P<folder_id>[0-9]*)/moveup$', views.move_folder_up, name='move_folder_up'),
     url(r'^folder/(?P<folder_id>[0-9]*)/movedown$', views.move_folder_down, name='move_folder_down'),
+    url(r'^folder/(?P<folder_id>[0-9]*)/movebottom$', views.move_folder_bottom, name='move_folder_bottom'),
+    url(r'^folder/(?P<folder_id>[0-9]*)/songs$', views.folder_songs, name='folder_songs'),
     url(r'^folder/skipcurrent$', views.skip_current_folder, name='skip_current_folder'),
     url(r'^subdirs/(?P<folder_id>[0-9]*)$', views.folder_subdirs, name="folder_subdirs"),
 ]

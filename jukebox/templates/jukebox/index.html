@@ -1,4 +1,6 @@
 {% extends "jukebox/base.html" %}
+<!-- vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4 
+-->
 
 {% block title %}Hack Radio{% endblock %}   
 
@@ -12,7 +14,7 @@
     <li role="presentation" class="active"><a href="#nowplaying" aria-controls="nowplaying" role="tab" data-toggle="tab">Now Playing</a></li>
     <li role="presentation"><a href="#comingup" aria-controls="comingup" role="tab" data-toggle="tab">Coming Up</a></li>
     <li role="presentation"><a href="#selectfolders" aria-controls="selectfolders" role="tab" data-toggle="tab">Select Folders</a></li>
-    <li role="presentation"><a href="#import" aria-controls="import" role="tab" data-toggle="tab">import</a></li>
+    <li role="presentation"><a href="#import" aria-controls="import" role="tab" data-toggle="tab">Import</a></li>
     <li role="presentation"><a class="play" href="{{ stream_url }}"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></a></li>
   </ul>
   </nav>
@@ -35,7 +37,7 @@
 
     <div role="tabpanel" class="tab-pane" id="comingup">
         <table id="queue" class="table table-striped">
-            <tr><th colspan="3" width="5%"></th><th>Folder path</th></tr>
+            <tr><th colspan="6" width="5%"></th><th>Folder path</th></tr>
             <!-- Filled by AJAX -->
         </table>
     </div>
@@ -110,6 +112,13 @@ function enable_click(event) {
     });
 }
 
+function move_folder_top(event) {
+    folderid = $(this).parent().attr('data-folderid');
+    $.get(Urls['jukebox:move_folder_top'](folderid), function(data){
+        update_queue();
+    });
+}
+
 function move_folder_up(event) {
     folderid = $(this).parent().attr('data-folderid');
     $.get(Urls['jukebox:move_folder_up'](folderid), function(data){
@@ -120,6 +129,13 @@ function move_folder_up(event) {
 function move_folder_down(event) {
     folderid = $(this).parent().attr('data-folderid');
     $.get(Urls['jukebox:move_folder_down'](folderid), function(data){
+        update_queue();
+    });
+}
+
+function move_folder_bottom(event) {
+    folderid = $(this).parent().attr('data-folderid');
+    $.get(Urls['jukebox:move_folder_bottom'](folderid), function(data){
         update_queue();
     });
 }
@@ -233,15 +249,19 @@ function update_queue() {
 
             $.each(data.queue, function(i, item) {
                 row = '<tr class="queued_folder" data-folderid="' + item.id + '">';
+                row += '<td class="move_top"><a href="#"><span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></a></td>';
                 row += '<td class="move_up"><a href="#"><span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span></a></td>';
-                row += '<td class="move_down"><a href="#"><span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span></a></td>';
                 row += '<td class="remove"><a href="#"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></td>';
+                row += '<td class="move_down"><a href="#"><span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span></a></td>';
+                row += '<td class="move_bottom"><a href="#"><span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span></a></td>';
                 row += '<td>' + item.name + ' (' + item.disk_path + ')</td>';
                 row += '</tr>';
                 table.append(row);
             });
+            $("td.move_top").click(move_folder_top);
             $("td.move_up").click(move_folder_up);
             $("td.move_down").click(move_folder_down);
+            $("td.move_bottom").click(move_folder_bottom);
             $("td.remove").click(deselect_folder);
             current_queue_hash = new_queue_hash;
         }

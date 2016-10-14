@@ -102,6 +102,12 @@ def toggle_folder(request, folder_id):
 
     return JsonResponse({"selected": folder.selected})
 
+def move_folder_top(request, folder_id):
+    folder = Folder.objects.get(pk=folder_id)
+    folder.top()
+
+    return HttpResponse("OK")
+
 def move_folder_up(request, folder_id):
     folder = Folder.objects.get(pk=folder_id)
     folder.up()
@@ -111,6 +117,12 @@ def move_folder_up(request, folder_id):
 def move_folder_down(request, folder_id):
     folder = Folder.objects.get(pk=folder_id)
     folder.down()
+
+    return HttpResponse("OK")
+
+def move_folder_bottom(request, folder_id):
+    folder = Folder.objects.get(pk=folder_id)
+    folder.bottom()
 
     return HttpResponse("OK")
 
