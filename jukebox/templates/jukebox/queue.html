@@ -1,0 +1,112 @@
+{% extends "jukebox/base.html" %}
+<!-- vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4 
+-->
+
+{% block title %}Hack Radio{% endblock %}   
+
+{% block content %}
+
+<div>
+
+
+  <p>&nbsp;</p>
+
+        <table id="queue" class="table table-striped">
+            <tr><th colspan="6" width="5%"></th><th>Folder path</th></tr>
+            <!-- Filled by AJAX -->
+        </table>
+
+</div>
+
+<script type="text/javascript">
+
+function move_folder_top(event) {
+    folderid = $(this).parent().attr('data-folderid');
+    $.get(Urls['jukebox:move_folder_top'](folderid), function(data){
+        update_queue();
+    });
+}
+
+function move_folder_up(event) {
+    folderid = $(this).parent().attr('data-folderid');
+    $.get(Urls['jukebox:move_folder_up'](folderid), function(data){
+        update_queue();
+    });
+}
+
+function move_folder_down(event) {
+    folderid = $(this).parent().attr('data-folderid');
+    $.get(Urls['jukebox:move_folder_down'](folderid), function(data){
+        update_queue();
+    });
+}
+
+function move_folder_bottom(event) {
+    folderid = $(this).parent().attr('data-folderid');
+    $.get(Urls['jukebox:move_folder_bottom'](folderid), function(data){
+        update_queue();
+    });
+}
+
+function deselect_folder(event) {
+    folderid = $(this).parent().attr('data-folderid');
+    $.get(Urls['jukebox:toggle_folder'](folderid), function(data){
+        update_queue();
+    });
+}
+
+function fill_song_popover(folderid) {
+    $.get(Urls['jukebox:folder_songs'](folderid), function(data){
+        content = ""
+        $.each(data.songs, function(i, song) {
+            content += "<p>" + song.filename + "</p>";
+        });
+        button = $(".songs_button[data-folderid='" + folderid + "']");
+
+        button.attr('data-content', content);
+    });
+}
+
+
+function update_queue() {
+  $.get("{% url 'jukebox:json_queue' %}", function(data){
+        new_queue_hash = data.hash
+        if (new_queue_hash != current_queue_hash) {
+            //alert("Queue changed");
+            table = $("table#queue");
+            $("tr.queued_folder").remove();
+
+            $.each(data.queue, function(i, item) {
+                row = '<tr class="queued_folder" data-folderid="' + item.id + '">';
+                row += '<td class="move_top"><a href="#"><span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></a></td>';
+                row += '<td class="move_up"><a href="#"><span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span></a></td>';
+                row += '<td class="remove"><a href="#"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></td>';
+                row += '<td class="move_down"><a href="#"><span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span></a></td>';
+                row += '<td class="move_bottom"><a href="#"><span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span></a></td>';
+		row += '<td><button type="button" class="btn btn-info songs_button" ';
+                row += 'data-folderid="' + item.id + '" data-toggle="popover" data-trigger="hover" ';
+                row += 'title="Songs in ' + item.name + '" data-html="true" data-content="To be Filled In">Songs</button></td>';
+                row += '<td>' + item.name + ' (' + item.disk_path + ')</td>';
+                row += '</tr>';
+                table.append(row);
+                fill_song_popover(item.id);
+            });
+            $("td.move_top").click(move_folder_top);
+            $("td.move_up").click(move_folder_up);
+            $("td.move_down").click(move_folder_down);
+            $("td.move_bottom").click(move_folder_bottom);
+            $("td.remove").click(deselect_folder);
+	    $('[data-toggle="popover"]').popover();
+            current_queue_hash = new_queue_hash;
+        }
+    });
+}
+
+$(document).ready( function() {
+    current_queue_hash = ""
+
+    update_queue();
+    setInterval(update_queue, 5000);
+});
+</script>
+{% endblock %}   

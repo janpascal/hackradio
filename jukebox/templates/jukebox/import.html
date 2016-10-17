@@ -1,0 +1,83 @@
+{% extends "jukebox/base.html" %}
+<!-- vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4 
+-->
+
+{% block title %}Hack Radio{% endblock %}   
+
+{% block content %}
+
+<div>
+
+  <p>&nbsp;</p>
+
+    <div role="tabpanel" class="tab-pane" id="import">
+        <p>Import a collection of mp3, flac, ogg, m4a or mpc audio files <em>on the
+          server</em></p>
+
+        <form action="#" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="rootdir">Collection root directory</label>
+                <input type="text" class="form-control" placeholder="Root directory on server" id="rootdir">
+            </div>
+            <button id="importbutton" class="btn btn-primary">Import</button>
+        </form>
+    </div>
+
+</div>
+
+<!-- Modal dialogs -->
+
+<div id="import_modal" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Importing folders...</h4>
+      </div>
+      <div class="modal-body">
+        <p>Importing music from <span id="modal_import_dir">...</span>&hellip;</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<script type="text/javascript">
+
+function import_clicked(event) {
+    root_dir = $(this).parent().find("input#rootdir").val()
+    csrf_token = $(this).parent().find("input[name=csrfmiddlewaretoken]").attr("value")
+    post_data = {
+        "root_dir": root_dir,
+        "csrfmiddlewaretoken": csrf_token
+    }
+    $('#modal_import_dir').text(root_dir);
+
+    $('#import_modal').modal('show')
+    $.post(Urls['jukebox:import_collection'](), post_data, function(data){
+        $('#import_modal').modal('hide')
+    });
+
+    return false;
+}
+
+function fill_song_popover(folderid) {
+    $.get(Urls['jukebox:folder_songs'](folderid), function(data){
+        content = ""
+        $.each(data.songs, function(i, song) {
+            content += "<p>" + song.filename + "</p>";
+        });
+        button = $(".songs_button[data-folderid='" + folderid + "']");
+
+        button.attr('data-content', content);
+    });
+}
+
+$(document).ready( function() {
+    $("button#importbutton").click(import_clicked);
+});
+</script>
+{% endblock %}   

@@ -9,11 +9,15 @@ from . import views
 app_name = 'jukebox'
 urlpatterns = [
     url(r'^$', views.index, name='index'),
-    url(r'^now_playing$', views.now_playing, name='now_playing'),
-    url(r'^import_collection$', views.import_collection, name='import_collection'),
+    url(r'^queue$', views.queue, name='queue'),
+    url(r'^select_folders$', views.select_folders, name='select_folders'),
+    url(r'^import$', views.import_page, name='import'),
+
+    url(r'^json/now_playing$', views.now_playing, name='now_playing'),
     url(r'^json/queue$', views.json_queue, name='json_queue'),
     url(r'^json/roots$', views.json_roots, name='json_roots'),
     url(r'^json/convert_status$', views.convert_status, name='convert_status'),
+    url(r'^import_collection$', views.import_collection, name='import_collection'),
     url(r'^song/(?P<song_id>[0-9]+)/skip$', views.skip_song, name="skip_song"),
     url(r'^song/(?P<song_id>[0-9]+)/reenable$', views.reenable_song, name="reenable_song"),
     url(r'^folder/(?P<folder_id>[0-9]*)/toggle$', views.toggle_folder, name='toggle_folder'),

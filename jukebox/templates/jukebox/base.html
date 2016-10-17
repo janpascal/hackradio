@@ -18,6 +18,17 @@
 	<script src="{% url 'js_reverse' %}" type="text/javascript"></script>
     </head>
     <body>
+        <!-- Nav tabs -->
+        <nav class="navbar navbar-inverse navbar-fixed-top">
+            <ul class="nav nav-pills" role="tablist">
+                <li role="presentation" {% if page_id == "index" %} class="active" {% endif %}><a href="{% url 'jukebox:index' %}">Now Playing</a></li>
+                <li role="presentation" {% if page_id == "queue" %} class="active" {% endif %}><a href="{% url 'jukebox:queue' %}">Queue</a></li>
+                <li role="presentation" {% if page_id == "select_folders" %} class="active" {% endif %}><a href="{% url 'jukebox:select_folders' %}">Select Folders</a></li>
+                <li role="presentation" {% if page_id == "import" %} class="active" {% endif %}><a href="{% url 'jukebox:import' %}">Import</a></li>
+                <li role="presentation"><a class="play" href="{{ stream_url }}"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></a></li>
+            </ul>
+        </nav>
+
         <div id="main" class="container-fluid">
             {% if messages %}
             <ul class="messages">

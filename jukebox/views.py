@@ -23,13 +23,37 @@ import converter
 
 logger = logging.getLogger(__name__)
 
+# HTML pages
+
 def index(request):
-    roots = Folder.objects.filter(parent=None).all()
     context = {
-        "roots": roots,
+        "page_id": "index",
         "stream_url": settings.JUKEBOX_STREAM_URL
     }
     return render(request, "jukebox/index.html", context)
+
+def queue(request):
+    context = {
+        "page_id": "queue",
+        "stream_url": settings.JUKEBOX_STREAM_URL
+    }
+    return render(request, "jukebox/queue.html", context)
+
+def select_folders(request):
+    context = {
+        "page_id": "select_folders",
+        "stream_url": settings.JUKEBOX_STREAM_URL
+    }
+    return render(request, "jukebox/select_folders.html", context)
+
+def import_page(request):
+    context = {
+        "page_id": "import",
+        "stream_url": settings.JUKEBOX_STREAM_URL
+    }
+    return render(request, "jukebox/import.html", context)
+
+# JSON data requests
 
 def now_playing(request):
     now_playing,current_folder,current_song = queue_player.now_playing()
@@ -59,20 +83,6 @@ def json_queue(request):
         
     return JsonResponse(context)
 
-def skip_song(request, song_id):
-    song = Song.objects.get(pk=song_id)
-    song.skipped = True
-    song.save()
-
-    return HttpResponse("OK")
-
-def reenable_song(request, song_id):
-    song = Song.objects.get(pk=song_id)
-    song.skipped = False
-    song.save()
-
-    return HttpResponse("OK")
-
 def json_roots(request):
     roots = Folder.objects.filter(parent=None)
     dict_roots = []
@@ -99,6 +109,39 @@ def folder_subdirs(request, folder_id):
     #logger.info("Returning children: {}".format(dict_children))
     return JsonResponse({"children":dict_children})
 
+def convert_status(request):
+    running = converter.get_running();
+    queued = converter.get_queued();
+    result = {
+        "running": [model_to_dict(s) for s in running],
+        "queued": [model_to_dict(s) for s in queued]
+    }
+    return JsonResponse(result);
+
+def folder_songs(request, folder_id):
+    folder = Folder.objects.get(pk=folder_id)
+    songs = folder.songs.all()
+    response  = {
+        "songs": [model_to_dict(s) for s in songs],
+    }
+    return JsonResponse(response)
+
+# Actions
+
+def skip_song(request, song_id):
+    song = Song.objects.get(pk=song_id)
+    song.skipped = True
+    song.save()
+
+    return HttpResponse("OK")
+
+def reenable_song(request, song_id):
+    song = Song.objects.get(pk=song_id)
+    song.skipped = False
+    song.save()
+
+    return HttpResponse("OK")
+
 def skip_current_folder(request):
     queue_player.skip_current_folder()
     return HttpResponse("OK")
@@ -115,16 +158,6 @@ def toggle_folder(request, folder_id):
     folder.save()
 
     return JsonResponse({"selected": folder.selected, "converting": converting})
-
-def convert_status(request):
-    running = converter.get_running();
-    queued = converter.get_queued();
-    result = {
-        "running": [model_to_dict(s) for s in running],
-        "queued": [model_to_dict(s) for s in queued]
-    }
-    return JsonResponse(result);
-
 
 def move_folder_top(request, folder_id):
     folder = Folder.objects.get(pk=folder_id)
@@ -149,14 +182,6 @@ def move_folder_bottom(request, folder_id):
     folder.bottom()
 
     return HttpResponse("OK")
-
-def folder_songs(request, folder_id):
-    folder = Folder.objects.get(pk=folder_id)
-    songs = folder.songs.all()
-    response  = {
-        "songs": [model_to_dict(s) for s in songs],
-    }
-    return JsonResponse(response)
 
 def import_collection(request):
     root_dir = request.POST['root_dir']

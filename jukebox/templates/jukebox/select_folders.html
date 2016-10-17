@@ -1,0 +1,181 @@
+{% extends "jukebox/base.html" %}
+<!-- vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4 
+-->
+
+{% block title %}Hack Radio{% endblock %}   
+
+{% block content %}
+
+<div>
+
+  <p>&nbsp;</p>
+
+        <table id="tree" data-path="">
+            <thead>
+            <tr><th>Folder path</th></tr>
+            </thead>
+            <tbody>
+                <!-- filled by AJAX -->
+            </tbody>
+        </table>
+
+
+</div>
+
+<!-- Modal dialogs -->
+
+<div id="convert_modal" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Converting files to mp3...</h4>
+      </div>
+      <div class="modal-body">
+        <div class="pabel panel-default">
+            <div class="panel-heading">Now converting</div>
+            <div class="panel-body now_converting">
+            <!-- Filled by Ajax -->
+            </div>
+        </div>
+        <div class="pabel panel-default">
+            <div class="panel-heading">Queued</div>
+            <div class="panel-body convert_queue">
+            <!-- Filled by Ajax -->
+            </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<script type="text/javascript">
+
+function update_convert_queue() {
+    $.get(Urls['jukebox:convert_status'](), function(data){
+        running_content = ""
+        $.each(data.running, function(i, song) {
+            running_content += "<p>" + song.filename + "</p>";
+        });
+        $(".now_converting").html(running_content);
+
+        queued_content = ""
+        $.each(data.queued, function(i, song) {
+            queued_content += "<p>" + song.filename + "</p>";
+        });
+        $(".convert_queue").html(queued_content);
+
+        if (data.running.length == 0 && data.queued.length == 0) {
+            $('#convert_modal').modal('hide')
+            clearInterval(convert_queue_interval);
+        }
+    });
+}
+
+function toggle_folder(event) {
+    folderid = $(this).parent().parent().attr('data-tt-id');
+    //alert("Selecting folder " + folderid);
+    $.get(Urls['jukebox:toggle_folder'](folderid), function(data){
+        row = $("tr[data-tt-id="+folderid+"]");
+        if (data.selected) {
+            row.addClass("bg-info");
+            if (data.converting) {
+                $('#convert_modal').modal('show')
+                update_convert_queue();
+                convert_queue_interval = setInterval(update_convert_queue, 1000);
+            }
+        } else {
+            row.removeClass("bg-info");
+        }
+    });
+}
+
+function fill_song_popover(folderid) {
+    $.get(Urls['jukebox:folder_songs'](folderid), function(data){
+        content = ""
+        $.each(data.songs, function(i, song) {
+            content += "<p>" + song.filename + "</p>";
+        });
+        button = $(".songs_button[data-folderid='" + folderid + "']");
+
+        button.attr('data-content', content);
+    });
+}
+
+function update_roots() {
+    $.get("{% url 'jukebox:json_roots' %}", function(data){
+        $("tr.root_folder").remove();
+
+        rows = ""
+        $.each(data.roots, function(i, item) {
+            row = '<tr class="root_folder" data-tt-id="' + item.id + '" data-tt-branch="true">';
+            row += '<td><span class="folder">' + item.name + '</span></td>';
+            row + '</tr>';
+            rows += row;
+        });
+        table = $("table#tree");
+        table.treetable("loadBranch", null, rows);
+    });
+}
+
+function load_children(root) {
+    root_id = root.id;
+    $.get(Urls['jukebox:folder_subdirs'](root_id), function(data){
+        rows = ""
+        $.each(data.children, function(i, item) {
+            row = 
+                "<tr data-tt-id='" + item.id + "' " +
+                "data-tt-parent-id='" + root_id + "' ";
+            if (item.has_children) {
+                row += "data-tt-branch='true' ";
+            }
+            if (item.selected) {
+                row += " class='bg-info' ";
+            }
+            row += ">";
+            row += '<td>';
+            if (item.selectable) {
+                row += '<span class="label label-info songs_button" data-folderid="' + item.id + '" data-toggle="popover" data-trigger="hover" title="Songs in ' + item.name + '" data-html="true" data-content="To be Filled In">Songs</span>'; 
+                row += '&nbsp;&nbsp;';
+            }
+            row += "<span class='folder'>" + item.name + "</span></td>"; 
+            row += "</tr>";
+            rows += row;
+        });
+
+        table = $("#tree");
+        table.treetable("loadBranch", root, rows);
+        $.each(data.children, function(i, item) {
+            fill_song_popover(item.id);
+        });
+        $('span.songs_button[data-toggle="popover"]').popover();
+    });
+}
+
+
+
+$(document).ready( function() {
+    update_roots();
+
+    var table = $("#tree");
+
+    table.treetable({
+        expandable: true,
+        initialState: "collapsed",
+        onNodeCollapse: function() {
+            var node = this;
+            table.treetable("unloadBranch", node);
+        },
+        onNodeExpand: function() {
+            var node = this;
+            load_children(node);
+        }
+    });
+
+    $(document).on("mousedown", "span.folder", toggle_folder);
+});
+</script>
+{% endblock %}   
