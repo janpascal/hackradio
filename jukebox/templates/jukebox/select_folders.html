@@ -32,18 +32,7 @@
         <h4 class="modal-title">Converting files to mp3...</h4>
       </div>
       <div class="modal-body">
-        <div class="pabel panel-default">
-            <div class="panel-heading">Now converting</div>
-            <div class="panel-body now_converting">
-            <!-- Filled by Ajax -->
-            </div>
-        </div>
-        <div class="pabel panel-default">
-            <div class="panel-heading">Queued</div>
-            <div class="panel-body convert_queue">
-            <!-- Filled by Ajax -->
-            </div>
-        </div>
+      <!-- filled by Ajax -->
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -52,21 +41,64 @@
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
+<!-- Templates -->
+
+{% verbatim %}
+<script id="modal-body-template" type="text/x-jsrender">
+    <div class="panel panel-default">
+        <div class="panel-heading">Now converting</div>
+        <div class="panel-body">
+            {{for running}}
+                <p>{{:filename}}</p>
+            {{/for}}
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">Queued</div>
+        <div class="panel-body">
+            {{for queued}}
+                <p>{{:filename}}</p>
+            {{/for}}
+        </div>
+    </div>
+</script>
+
+<script id="root-folder-template" type="text/x-jsrender">
+<tr class="root_folder" data-tt-id="{{:id}}" data-tt-branch="true">
+  <td><span class="folder">{{:name}}</span></td>
+</tr>
+</script>
+
+<script id="folder-template" type="text/x-jsrender">
+<tr data-tt-id="{{:id}}" data-tt-parent-id="{{:parent}}" 
+  {{if has_children}}data-tt-branch="true"{{/if}}
+  {{if selected}}class="bg-info"{{/if}}>
+<td>
+{{if selectable}}
+<span class="label label-info songs_button" data-folderid="{{:id}}" 
+      data-container="body"
+      data-toggle="popover" data-trigger="hover" 
+      title="Songs in {{:name}}" data-html="true" 
+      data-content="To be Filled In">Songs</span>
+&nbsp;&nbsp;
+{{/if}}
+<span class="folder">{{:name}}</span></td> 
+</tr>
+</script>
+
+<script id="popover-template" type="text/x-jsrender">
+    {{for songs}}
+       {{:filename}}<br />
+    {{/for}}
+</script>
+{% endverbatim %}
+
 <script type="text/javascript">
 
 function update_convert_queue() {
     $.get(Urls['jukebox:convert_status'](), function(data){
-        running_content = ""
-        $.each(data.running, function(i, song) {
-            running_content += "<p>" + song.filename + "</p>";
-        });
-        $(".now_converting").html(running_content);
-
-        queued_content = ""
-        $.each(data.queued, function(i, song) {
-            queued_content += "<p>" + song.filename + "</p>";
-        });
-        $(".convert_queue").html(queued_content);
+        html = $("#modal-body-template").render(data);
+        $(".modal-body").html(html);
 
         if (data.running.length == 0 && data.queued.length == 0) {
             $('#convert_modal').modal('hide')
@@ -95,67 +127,37 @@ function toggle_folder(event) {
 
 function fill_song_popover(folderid) {
     $.get(Urls['jukebox:folder_songs'](folderid), function(data){
-        content = ""
-        $.each(data.songs, function(i, song) {
-            content += "<p>" + song.filename + "</p>";
-        });
         button = $(".songs_button[data-folderid='" + folderid + "']");
-
-        button.attr('data-content', content);
+        html = $("#popover-template").render(data);
+        button.attr('data-content', html);
     });
 }
 
 function update_roots() {
     $.get("{% url 'jukebox:json_roots' %}", function(data){
-        $("tr.root_folder").remove();
-
-        rows = ""
-        $.each(data.roots, function(i, item) {
-            row = '<tr class="root_folder" data-tt-id="' + item.id + '" data-tt-branch="true">';
-            row += '<td><span class="folder">' + item.name + '</span></td>';
-            row + '</tr>';
-            rows += row;
+        $("tr.root_folder").each(function(index,item) {
+            id = $(this).attr("data-tt-id");
+            table.treetable("removeNode", id);
         });
+
+        html = $("#root-folder-template").render(data.roots);
         table = $("table#tree");
-        table.treetable("loadBranch", null, rows);
+        table.treetable("loadBranch", null, html);
     });
 }
 
 function load_children(root) {
     root_id = root.id;
     $.get(Urls['jukebox:folder_subdirs'](root_id), function(data){
-        rows = ""
-        $.each(data.children, function(i, item) {
-            row = 
-                "<tr data-tt-id='" + item.id + "' " +
-                "data-tt-parent-id='" + root_id + "' ";
-            if (item.has_children) {
-                row += "data-tt-branch='true' ";
-            }
-            if (item.selected) {
-                row += " class='bg-info' ";
-            }
-            row += ">";
-            row += '<td>';
-            if (item.selectable) {
-                row += '<span class="label label-info songs_button" data-folderid="' + item.id + '" data-toggle="popover" data-trigger="hover" title="Songs in ' + item.name + '" data-html="true" data-content="To be Filled In">Songs</span>'; 
-                row += '&nbsp;&nbsp;';
-            }
-            row += "<span class='folder'>" + item.name + "</span></td>"; 
-            row += "</tr>";
-            rows += row;
-        });
-
         table = $("#tree");
-        table.treetable("loadBranch", root, rows);
+        html = $("#folder-template").render(data.children);
+        table.treetable("loadBranch", root, html);
         $.each(data.children, function(i, item) {
             fill_song_popover(item.id);
         });
         $('span.songs_button[data-toggle="popover"]').popover();
     });
 }
-
-
 
 $(document).ready( function() {
     update_roots();

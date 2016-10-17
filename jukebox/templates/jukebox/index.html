@@ -11,17 +11,38 @@
   <p>&nbsp;</p>
 
         <table id="now_playing" class="table table-striped">
+        <thead>
             <tr>
                 <th width="5%">
                   <a class="skip_current_folder" href="#"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
                 </th>
                 <th>Album: <span id="now_playing_title"></span></th>
-                <!-- Filled by AJAX -->
             </tr>
+        </thead>
+        <tbody>
+                <!-- Filled by AJAX -->
+        </tbody>
         </table>
 
 
 </div>
+
+<!-- Templates -->
+
+{% verbatim %}
+<script id="row-template" type="text/x-jsrender">
+<tr class="now_playing{{if now_playing}} success{{/if}}" data-songid="{{:id}}">
+  <td class="{{if skipped}}enable{{else}}skip{{/if}}">
+    <a href="#"><span class="glyphicon {{if skipped}}glyphicon-plus{{else}}glyphicon-remove{{/if}}" aria-hidden="true"></span></a>
+  </td>
+  <td>
+    {{if skipped}}<s>{{/if}}
+    {{:filename}}
+    {{if skipped}}</s>{{/if}}
+  </td>
+</tr>
+</script>
+{% endverbatim %}
 
 <script type="text/javascript">
 
@@ -58,36 +79,10 @@ function update_now_playing() {
             force_update = false;
 
             table = $("table#now_playing");
-            $("tr.now_playing").remove();
 
-            $.each(data.now_playing, function(i, item) {
-                row = '<tr class="now_playing';
-                if (item.now_playing) {
-                    row += ' success';
-                }
-                row += '" data-songid="' + item.id + '">';
-                row += '<td class="';
-                if (item.skipped) {
-                    row += 'enable';
-                } else {
-                    row += 'skip';
-                }
-                row += '">';
-                row += '<a href="#"><span class="glyphicon ';
-                if (item.skipped) {
-                    row += 'glyphicon-plus';
-                } else {
-                    row += 'glyphicon-remove';
-                }
-                row += '" aria-hidden="true"></span></a></td>';
-                row += '<td>';
-                if (item.skipped) { row += "<s>"; }
-                row += item.filename;
-                if (item.skipped) { row += "</s>"; }
-                row += '</td>';
-                row += '</tr>';
-                table.append(row);
-            });
+            html = $("#row-template").render(data.now_playing);
+            table.find("tbody").html(html);
+
             $("td.skip").click(skip_click);
             $("td.enable").click(enable_click);
             $("#now_playing_title").html(data.current_folder.disk_path);
