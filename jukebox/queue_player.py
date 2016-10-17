@@ -45,6 +45,10 @@ def _play_thread():
                 song.save()
                 continue
 
+            if song.convertable and not song.conversion_done():
+                logger.warning(u"Skipping {}, not converted yet".format(song.filename))
+                continue
+
             logger.info(u"Playing {}".format(song.filename))
             song.now_playing = True
             song.save()

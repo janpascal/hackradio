@@ -68,6 +68,9 @@ class Song(models.Model):
         else:
             return os.path.join(self.folder.disk_path, self.filename)
 
+    def conversion_done(self):
+        return bool(self.converted_path)
+
     def __str__(self):
         return self.disk_path()
 
