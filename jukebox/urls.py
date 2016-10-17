@@ -17,6 +17,7 @@ urlpatterns = [
     url(r'^json/queue$', views.json_queue, name='json_queue'),
     url(r'^json/roots$', views.json_roots, name='json_roots'),
     url(r'^json/convert_status$', views.convert_status, name='convert_status'),
+    url(r'^json/import_status$', views.import_status, name='import_status'),
     url(r'^import_collection$', views.import_collection, name='import_collection'),
     url(r'^song/(?P<song_id>[0-9]+)/skip$', views.skip_song, name="skip_song"),
     url(r'^song/(?P<song_id>[0-9]+)/reenable$', views.reenable_song, name="reenable_song"),

@@ -33,10 +33,11 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title">Importing folders...</h4>
+        <h4 class="modal-title">Importing music...</h4>
       </div>
       <div class="modal-body">
-        <p>Importing music from <span id="modal_import_dir">...</span>&hellip;</p>
+        <p>Importing music from <span id="modal_import_dir"><!--AJAX--></span>&hellip;
+        </p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -47,6 +48,12 @@
 
 <script type="text/javascript">
 
+function update_import_modal() {
+    $.get(Urls['jukebox:import_status'](), function(data){
+        $("#modal_import_dir").text(data.current_import_dir);
+    });
+}
+
 function import_clicked(event) {
     root_dir = $(this).parent().find("input#rootdir").val()
     csrf_token = $(this).parent().find("input[name=csrfmiddlewaretoken]").attr("value")
@@ -54,11 +61,12 @@ function import_clicked(event) {
         "root_dir": root_dir,
         "csrfmiddlewaretoken": csrf_token
     }
-    $('#modal_import_dir').text(root_dir);
 
-    $('#import_modal').modal('show')
+    $('#import_modal').modal('show');
+    update_modal_interval = setInterval(update_import_modal, 200);
     $.post(Urls['jukebox:import_collection'](), post_data, function(data){
         $('#import_modal').modal('hide')
+        clearInterval(update_modal_interval);
     });
 
     return false;

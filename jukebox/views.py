@@ -118,6 +118,13 @@ def convert_status(request):
     }
     return JsonResponse(result);
 
+def import_status(request):
+    result = {
+        "current_import_dir": util.current_import_dir(),
+    }
+    logger.info("Returning import status: {}".format(result))
+    return JsonResponse(result);
+
 def folder_songs(request, folder_id):
     folder = Folder.objects.get(pk=folder_id)
     songs = folder.songs.all()

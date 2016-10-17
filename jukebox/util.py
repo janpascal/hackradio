@@ -11,12 +11,22 @@ from .models import Folder, Song
 
 logger = logging.getLogger(__name__)
 
+_current_dir = ""
+
+def current_import_dir():
+    global _current_dir
+    return _current_dir
+
 def import_collection(root_dir):
     recurse_import_dir(root_dir, None)
 
 # returns True if any song were including in this subtree
 def recurse_import_dir(root_path, parent):
+    global _current_dir
+
     logger.info(u"Importing recursively from dir {}".format(root_path))
+    _current_dir = root_path
+
     found_something = False
     folder,folder_is_new = Folder.objects.get_or_create(disk_path=root_path, name=os.path.basename(root_path))
     logger.debug("Folder is new: {}".format(folder_is_new))
