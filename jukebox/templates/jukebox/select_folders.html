@@ -75,12 +75,11 @@
   {{if selected}}class="bg-info"{{/if}}>
 <td>
 {{if selectable}}
-<span class="label label-info songs_button" data-folderid="{{:id}}" 
+<small class="label label-info songs_button" data-folderid="{{:id}}" 
       data-container="body"
       data-toggle="popover" data-trigger="hover" 
       title="Songs in {{:name}}" data-html="true" 
-      data-content="To be Filled In">Songs</span>
-&nbsp;&nbsp;
+      data-content="To be Filled In">Songs</small>
 {{/if}}
 <span class="folder">{{:name}}</span></td> 
 </tr>
@@ -155,7 +154,7 @@ function load_children(root) {
         $.each(data.children, function(i, item) {
             fill_song_popover(item.id);
         });
-        $('span.songs_button[data-toggle="popover"]').popover();
+        $('.songs_button[data-toggle="popover"]').popover();
     });
 }
 
