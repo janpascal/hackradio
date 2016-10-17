@@ -89,18 +89,19 @@ config.read(os.path.join(BASE_DIR, 'hackradio', 'local.ini'))
 #    }
 #}
 
-JUKEBOX_SHOUT_HOST = config.get('shout', 'JUKEBOX_SHOUT_HOST')
-JUKEBOX_SHOUT_PORT = config.getint('shout', 'JUKEBOX_SHOUT_PORT')
-JUKEBOX_SHOUT_USER = config.get('shout', 'JUKEBOX_SHOUT_USER')
-JUKEBOX_SHOUT_PASSWORD = config.get('shout', 'JUKEBOX_SHOUT_PASSWORD')
-JUKEBOX_SHOUT_MOUNT = config.get('shout', 'JUKEBOX_SHOUT_MOUNT')
-JUKEBOX_SHOUT_NAME = config.get('shout', 'JUKEBOX_SHOUT_NAME')
-JUKEBOX_SHOUT_GENRE = config.get('shout', 'JUKEBOX_SHOUT_GENRE')
-JUKEBOX_SHOUT_URL = config.get('shout', 'JUKEBOX_SHOUT_URL')
-JUKEBOX_SHOUT_PUBLIC = config.getint('shout', 'JUKEBOX_SHOUT_PUBLIC')
+JUKEBOX_SHOUT_HOST = config.get('jukebox', 'JUKEBOX_SHOUT_HOST')
+JUKEBOX_SHOUT_PORT = config.getint('jukebox', 'JUKEBOX_SHOUT_PORT')
+JUKEBOX_SHOUT_USER = config.get('jukebox', 'JUKEBOX_SHOUT_USER')
+JUKEBOX_SHOUT_PASSWORD = config.get('jukebox', 'JUKEBOX_SHOUT_PASSWORD')
+JUKEBOX_SHOUT_MOUNT = config.get('jukebox', 'JUKEBOX_SHOUT_MOUNT')
+JUKEBOX_SHOUT_NAME = config.get('jukebox', 'JUKEBOX_SHOUT_NAME')
+JUKEBOX_SHOUT_GENRE = config.get('jukebox', 'JUKEBOX_SHOUT_GENRE')
+JUKEBOX_SHOUT_URL = config.get('jukebox', 'JUKEBOX_SHOUT_URL')
+JUKEBOX_SHOUT_PUBLIC = config.getint('jukebox', 'JUKEBOX_SHOUT_PUBLIC')
 
-JUKEBOX_CACHE_DIR = config.get('shout', 'JUKEBOX_CACHE_DIR')
-JUKEBOX_STREAM_URL = config.get('shout', 'JUKEBOX_STREAM_URL')
+JUKEBOX_CACHE_DIR = config.get('jukebox', 'JUKEBOX_CACHE_DIR')
+JUKEBOX_STREAM_URL = config.get('jukebox', 'JUKEBOX_STREAM_URL')
+JUKEBOX_CONVERT_CONCURRENCY = config.getint('jukebox', 'JUKEBOX_CONVERT_CONCURRENCY');
 
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases

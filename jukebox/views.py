@@ -19,6 +19,7 @@ from django.urls import reverse, reverse_lazy
 from models import Folder, Song
 import queue_player
 import util
+import converter
 
 logger = logging.getLogger(__name__)
 
@@ -106,12 +107,24 @@ def toggle_folder(request, folder_id):
     folder = Folder.objects.get(pk=folder_id)
     #logger.info("Toggling folder {} ({})".format(folder.name, folder.id))
     folder.selected = folder.selectable and not folder.selected
+    converting = False
     if folder.selected:
         folder.bottom()
-        util.convert_files(folder)
+        converter.queue_convert_folder(folder)
+        converting = bool(converter.get_running()) or bool(converter.get_queued())
     folder.save()
 
-    return JsonResponse({"selected": folder.selected})
+    return JsonResponse({"selected": folder.selected, "converting": converting})
+
+def convert_status(request):
+    running = converter.get_running();
+    queued = converter.get_queued();
+    result = {
+        "running": [model_to_dict(s) for s in running],
+        "queued": [model_to_dict(s) for s in queued]
+    }
+    return JsonResponse(result);
+
 
 def move_folder_top(request, folder_id):
     folder = Folder.objects.get(pk=folder_id)

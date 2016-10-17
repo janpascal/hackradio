@@ -70,7 +70,9 @@
 
 </div>
 
-<div id="myModal" class="modal" tabindex="-1" role="dialog">
+<!-- Modal dialogs -->
+
+<div id="import_modal" class="modal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -79,6 +81,34 @@
       </div>
       <div class="modal-body">
         <p>Importing music from <span id="modal_import_dir">...</span>&hellip;</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div id="convert_modal" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Converting files to mp3...</h4>
+      </div>
+      <div class="modal-body">
+        <div class="pabel panel-default">
+            <div class="panel-heading">Now converting</div>
+            <div class="panel-body now_converting">
+            <!-- Filled by Ajax -->
+            </div>
+        </div>
+        <div class="pabel panel-default">
+            <div class="panel-heading">Queued</div>
+            <div class="panel-body convert_queue">
+            <!-- Filled by Ajax -->
+            </div>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -147,6 +177,27 @@ function deselect_folder(event) {
     });
 }
 
+function update_convert_queue() {
+    $.get(Urls['jukebox:convert_status'](), function(data){
+        running_content = ""
+        $.each(data.running, function(i, song) {
+            running_content += "<p>" + song.filename + "</p>";
+        });
+        $(".now_converting").html(running_content);
+
+        queued_content = ""
+        $.each(data.queued, function(i, song) {
+            queued_content += "<p>" + song.filename + "</p>";
+        });
+        $(".convert_queue").html(queued_content);
+
+        if (data.running.length == 0 && data.queued.length == 0) {
+            $('#convert_modal').modal('hide')
+            clearInterval(convert_queue_interval);
+        }
+    });
+}
+
 function toggle_folder(event) {
     folderid = $(this).parent().parent().attr('data-tt-id');
     //alert("Selecting folder " + folderid);
@@ -154,6 +205,10 @@ function toggle_folder(event) {
         row = $("tr[data-tt-id="+folderid+"]");
         if (data.selected) {
             row.addClass("bg-info");
+            if (data.converting) {
+                $('#convert_modal').modal('show')
+                convert_queue_interval = setInterval(update_convert_queue, 1000);
+            }
         } else {
             row.removeClass("bg-info");
         }
@@ -170,11 +225,11 @@ function import_clicked(event) {
     }
     $('#modal_import_dir').text(root_dir);
 
-    $('#myModal').modal('show')
+    $('#import_modal').modal('show')
     $.post(Urls['jukebox:import_collection'](), post_data, function(data){
         update_roots();
         update_queue();
-        $('#myModal').modal('hide')
+        $('#import_modal').modal('hide')
     });
 
     return false;

@@ -1,4 +1,4 @@
-[shout]
+[jukebox]
 JUKEBOX_SHOUT_HOST = localhost
 JUKEBOX_SHOUT_PORT = 8000
 JUKEBOX_SHOUT_USER = source
@@ -12,3 +12,4 @@ JUKEBOX_SHOUT_PUBLIC = 1
 JUKEBOX_CACHE_DIR = /var/music/cached
 
 JUKEBOX_STREAM_URL = http://www.example.com:8000/hackradio.mp3
+JUKEBOX_CONVERT_CONCURRENCY = 4
