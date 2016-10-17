@@ -93,3 +93,6 @@ a.play {
     margin-left: 25px;
     border: none;
 }
+.popover{
+    max-width: 50%;
+}
