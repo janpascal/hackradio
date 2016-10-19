@@ -8,10 +8,10 @@ from . import views
 
 app_name = 'jukebox'
 urlpatterns = [
-    url(r'^$', views.index, name='index'),
-    url(r'^queue$', views.queue, name='queue'),
-    url(r'^select_folders$', views.select_folders, name='select_folders'),
-    url(r'^import$', views.import_page, name='import'),
+    url(r'^index.html$', views.index, name='index'),
+    url(r'^queue.html$', views.queue, name='queue'),
+    url(r'^select_folders.html$', views.select_folders, name='select_folders'),
+    url(r'^import.html$', views.import_page, name='import'),
 
     url(r'^json/now_playing$', views.now_playing, name='now_playing'),
     url(r'^json/queue$', views.json_queue, name='json_queue'),
