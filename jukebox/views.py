@@ -75,6 +75,7 @@ def json_queue(request):
     queue.remove(current_folder)
     queue_hash = hashlib.md5("".join([f.disk_path.encode('ascii','ignore') for f in queue])).hexdigest()
     context = {
+        "current": model_to_dict(current_folder),
         "queue": [model_to_dict(f) for f in queue],
         "hash": queue_hash
     }

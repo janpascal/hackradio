@@ -26,12 +26,24 @@
 
 {% verbatim %}
 <script id="row-template" type="text/x-jsrender">
-<tr class="queued_folder" data-folderid="{{:id}}">
-<td class="move_top"><a href="#"><span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></a></td>
-<td class="move_up"><a href="#"><span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span></a></td>
-<td class="remove"><a href="#"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></td>
-<td class="move_down"><a href="#"><span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span></a></td>
-<td class="move_bottom"><a href="#"><span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span></a></td>
+<tr class="queued_folder" data-folderid="{{:id}}"{{if now_playing}} id="current_folder"{{/if}}>
+{{if now_playing}}
+    <td colspan="5" align="center"><em>Now playing</em></td>
+{{else}}
+    {{if ~first}}
+        <td colspan="2" />
+    {{else}}
+        <td class="move_top"><a href="#"><span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></a></td>
+        <td class="move_up"><a href="#"><span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span></a></td>
+    {{/if}}
+    <td class="remove"><a href="#"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></td>
+    {{if ~last}}
+        <td colspan="2" />
+    {{else}}
+        <td class="move_down"><a href="#"><span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span></a></td>
+        <td class="move_bottom"><a href="#"><span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span></a></td>
+    {{/if}}
+{{/if}}
 <td>
   <small class="label label-info songs_button" 
         data-container="body"
@@ -103,8 +115,19 @@ function update_queue() {
             //alert("Queue changed");
             table = $("table#queue");
 
-            html = $("#row-template").render(data.queue);
+            html = $("#row-template").render(data.current, {"now_playing": true,
+            "first": false, "last": false});
+            $.each(data.queue, function(i,folder) {
+                first = (i == 0);
+                last = (i == data.queue.length - 1);
+                row = $("#row-template").render(folder, {"now_playing": false,
+                "first": first, "last": last});
+                html += row;
+            });
+
             table.find("tbody").html(html);
+
+            fill_song_popover(data.current.id);
             $.each(data.queue, function(i, item) {
                 fill_song_popover(item.id);
             });
