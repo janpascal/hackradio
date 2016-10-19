@@ -67,14 +67,12 @@ def now_playing(request):
     return JsonResponse(context)
 
 def json_queue(request):
-    queue = Folder.objects.filter(selected=True).order_by('order')
+    queue = list(Folder.objects.filter(selected=True).order_by('order'))
     try:
         current_folder = Folder.objects.get(now_playing=True)
     except ObjectDoesNotExist:
         current_folder = None
-    if queue_player.is_playing() and len(queue)>0 and current_folder == queue[0]:
-        # Do not show currently playing folder in queue
-        queue = queue[1:]
+    queue.remove(current_folder)
     queue_hash = hashlib.md5("".join([f.disk_path.encode('ascii','ignore') for f in queue])).hexdigest()
     context = {
         "queue": [model_to_dict(f) for f in queue],

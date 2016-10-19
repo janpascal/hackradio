@@ -31,11 +31,11 @@ class Folder(models.Model):
         self.save()
 
     def up(self):
-        target = Folder.objects.filter(selected=True, order__lt=self.order).order_by("-order").first()
+        target = Folder.objects.filter(selected=True, now_playing=False, order__lt=self.order).order_by("-order").first()
         self.swap(target)
 
     def down(self):
-        target = Folder.objects.filter(selected=True, order__gt=self.order).order_by("order").first()
+        target = Folder.objects.filter(selected=True, now_playing=False, order__gt=self.order).order_by("order").first()
         self.swap(target)
 
     def bottom(self):
