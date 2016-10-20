@@ -96,6 +96,9 @@ a.play {
 .popover{
     max-width: 50%;
 }
-tr#current_folder>td {
+tr#current_folder > td {
+    background-color: #00ffff;
+}
+tr#current_song > td {
     background-color: #00ffff;
 }

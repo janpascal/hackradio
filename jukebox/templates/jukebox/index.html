@@ -14,7 +14,7 @@
         <thead>
             <tr>
                 <th width="5%">
-                  <a class="skip_current_folder" href="#"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+                  <a class="skip_current_folder" href="#"><span class="glyphicon glyphicon-stop" aria-hidden="true"></span></a>
                 </th>
                 <th>Album: <span id="now_playing_title"></span></th>
             </tr>
@@ -31,7 +31,7 @@
 
 {% verbatim %}
 <script id="row-template" type="text/x-jsrender">
-<tr class="now_playing{{if now_playing}} success{{/if}}" data-songid="{{:id}}">
+<tr class="now_playing"{{if now_playing}} id="current_song"{{/if}} data-songid="{{:id}}">
   <td class="{{if skipped}}enable{{else}}skip{{/if}}">
     <a href="#"><span class="glyphicon {{if skipped}}glyphicon-plus{{else}}glyphicon-remove{{/if}}" aria-hidden="true"></span></a>
   </td>
@@ -91,8 +91,8 @@ function update_now_playing() {
         }
         new_song_id = data.current_song.id
         if (new_song_id != current_song_id) {
-            $("tr[data-songid="+current_song_id+"]").removeClass("success");
-            $("tr[data-songid="+new_song_id+"]").addClass("success");
+            $("tr[data-songid="+current_song_id+"]").removeClass("current_song");
+            $("tr[data-songid="+new_song_id+"]").addClass("current_song");
             current_song_id = new_song_id;
             //alert("New song: " + data.current_song.filename + "; new song id: " + new_song_id);
         }
