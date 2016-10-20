@@ -152,6 +152,31 @@ def skip_current_folder(request):
     queue_player.skip_current_folder()
     return HttpResponse("OK")
 
+def select_folder(request, folder_id):
+    folder = Folder.objects.get(pk=folder_id)
+    logger.info("Selecting folder {} ({})".format(folder.name, folder.id))
+    
+    if not folder.selectable:
+        logger.info("Folder {} not selectable, not selecting!".format(folder.name))
+        return JsonResponse({"selected": False, "converting": False})
+
+    folder.selected = True
+    folder.save()
+    folder.bottom()
+    converter.queue_convert_folder(folder)
+    converting = bool(converter.get_running()) or bool(converter.get_queued())
+
+    return JsonResponse({"selected": True, "converting": converting})
+
+def deselect_folder(request, folder_id):
+    folder = Folder.objects.get(pk=folder_id)
+    #logger.info("Disabling folder {} ({})".format(folder.name, folder.id))
+    folder.selected = False
+    folder.bottom()
+    folder.save()
+
+    return JsonResponse({"selected": False, "converting": False})
+
 def toggle_folder(request, folder_id):
     folder = Folder.objects.get(pk=folder_id)
     #logger.info("Toggling folder {} ({})".format(folder.name, folder.id))

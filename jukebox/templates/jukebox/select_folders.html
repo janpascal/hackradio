@@ -8,17 +8,9 @@
 
 <div>
 
-  <p>&nbsp;</p>
+    <p>&nbsp;</p>
 
-        <table id="tree" data-path="">
-            <thead>
-            <tr><th>Folder path</th></tr>
-            </thead>
-            <tbody>
-                <!-- filled by AJAX -->
-            </tbody>
-        </table>
-
+    <div id="tree" />
 
 </div>
 
@@ -63,17 +55,8 @@
     </div>
 </script>
 
-<script id="root-folder-template" type="text/x-jsrender">
-<tr class="root_folder" data-tt-id="{{:id}}" data-tt-branch="true">
-  <td><span class="folder">{{:name}}</span></td>
-</tr>
-</script>
-
-<script id="folder-template" type="text/x-jsrender">
-<tr data-tt-id="{{:id}}" data-tt-parent-id="{{:parent}}" 
-  {{if has_children}}data-tt-branch="true"{{/if}}
-  {{if selected}}class="bg-info"{{/if}}>
-<td>
+<script id="folder-text-template" type="text/x-jsrender">
+{{:name}} 
 {{if selectable}}
 <small class="label label-info songs_button" data-folderid="{{:id}}" 
       data-container="body"
@@ -81,8 +64,6 @@
       title="Songs in {{:name}}" data-html="true" 
       data-content="To be Filled In">Songs</small>
 {{/if}}
-<span class="folder">{{:name}}</span></td> 
-</tr>
 </script>
 
 <script id="popover-template" type="text/x-jsrender">
@@ -96,7 +77,7 @@
 
 function update_convert_queue() {
     $.get(Urls['jukebox:convert_status'](), function(data){
-        html = $("#modal-body-template").render(data);
+        var html = $("#modal-body-template").render(data);
         $(".modal-body").html(html);
 
         if (data.running.length == 0 && data.queued.length == 0) {
@@ -106,77 +87,97 @@ function update_convert_queue() {
     });
 }
 
-function toggle_folder(event) {
-    folderid = $(this).parent().parent().attr('data-tt-id');
-    //alert("Selecting folder " + folderid);
-    $.get(Urls['jukebox:toggle_folder'](folderid), function(data){
-        row = $("tr[data-tt-id="+folderid+"]");
-        if (data.selected) {
-            row.addClass("bg-info");
+function fill_song_popover(folderid) {
+    $.get(Urls['jukebox:folder_songs'](folderid), function(data){
+        var button = $(".songs_button[data-folderid='" + folderid + "']");
+        var html = $("#popover-template").render(data);
+        button.attr('data-content', html);
+    });
+}
+
+$(document).ready( function() {
+    $('#tree').jstree({
+        'plugins': ["wholerow", "state", "checkbox", "types", "conditionalselect"],
+        'conditionalselect': function (node, event) {
+            return node.original.selectable;
+        },
+        'checkbox': {
+            'three_state': false,
+            'visible': false
+        },
+        'types': {
+            'root' : {
+            },
+            'folder' : {
+            },
+            'album' : {
+                'icon': 'glyphicon glyphicon-music',
+                'a_attr': {'class': 'tree_album'}
+            }
+        },
+        'core' : {
+            'multiple': true,
+            'data': function(node, cb) {
+                if (node.id==="#") {
+                    $.get("{% url 'jukebox:json_roots' %}", function(data){
+                        var roots = [];
+                        $.each(data.roots, function(i, root) {
+                            roots.push({
+                                "text": root.name, 
+                                "id": root.id,
+                                "children": true, 
+                                "selectable": false,
+                                "type": "root"});
+                        });
+                        cb(roots);
+                    });
+                } else {
+                    $.get(Urls['jukebox:folder_subdirs'](node.id), function(data){
+                        var children = [];
+                        $.each(data.children, function(i, item) {
+                            children.push({
+                                "text": $("#folder-text-template").render(item),
+                                "id": item.id,
+                                "children": item.has_children, 
+                                "selectable": item.selectable,
+                                "state": {
+                                    "selected": item.selected
+                                },
+                                "type": item.selectable ? "album" : "folder"
+                            });
+
+                            if (item.selectable) {
+                                var interval_id = setInterval(function(){
+                                     // $("li#"+id).length will be zero until the node is loaded
+                                     if($("li#"+item.id).length != 0){
+                                         // "exit" the interval loop with clearInterval command
+                                         clearInterval(interval_id)
+                                         fill_song_popover(item.id);
+                                        $('.songs_button[data-toggle="popover"]').popover();
+                                      }
+                                }, 5);
+                            }
+                        });
+                        cb(children);
+                    });
+                    return ;
+                }
+            }
+        }
+    });
+    $('#tree').on('select_node.jstree', function(e, data) {
+        $.get(Urls['jukebox:select_folder'](data.node.id), function(data){
             if (data.converting) {
                 $('#convert_modal').modal('show')
                 update_convert_queue();
                 convert_queue_interval = setInterval(update_convert_queue, 1000);
             }
-        } else {
-            row.removeClass("bg-info");
-        }
-    });
-}
-
-function fill_song_popover(folderid) {
-    $.get(Urls['jukebox:folder_songs'](folderid), function(data){
-        button = $(".songs_button[data-folderid='" + folderid + "']");
-        html = $("#popover-template").render(data);
-        button.attr('data-content', html);
-    });
-}
-
-function update_roots() {
-    $.get("{% url 'jukebox:json_roots' %}", function(data){
-        $("tr.root_folder").each(function(index,item) {
-            id = $(this).attr("data-tt-id");
-            table.treetable("removeNode", id);
         });
-
-        html = $("#root-folder-template").render(data.roots);
-        table = $("table#tree");
-        table.treetable("loadBranch", null, html);
     });
-}
-
-function load_children(root) {
-    root_id = root.id;
-    $.get(Urls['jukebox:folder_subdirs'](root_id), function(data){
-        table = $("#tree");
-        html = $("#folder-template").render(data.children);
-        table.treetable("loadBranch", root, html);
-        $.each(data.children, function(i, item) {
-            fill_song_popover(item.id);
+    $('#tree').on('deselect_node.jstree', function(e, data) {
+        $.get(Urls['jukebox:deselect_folder'](data.node.id), function(data) {
         });
-        $('.songs_button[data-toggle="popover"]').popover();
     });
-}
-
-$(document).ready( function() {
-    update_roots();
-
-    var table = $("#tree");
-
-    table.treetable({
-        expandable: true,
-        initialState: "collapsed",
-        onNodeCollapse: function() {
-            var node = this;
-            table.treetable("unloadBranch", node);
-        },
-        onNodeExpand: function() {
-            var node = this;
-            load_children(node);
-        }
-    });
-
-    $(document).on("mousedown", "span.folder", toggle_folder);
 });
 </script>
 {% endblock %}   
