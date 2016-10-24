@@ -102,3 +102,7 @@ tr#current_folder > td {
 tr#current_song > td {
     background-color: #00ffff;
 }
+p.current_folder {
+    background-color: #00ffff;
+}
+

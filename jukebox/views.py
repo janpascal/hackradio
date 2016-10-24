@@ -11,7 +11,7 @@ from django.conf import settings
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms.models import model_to_dict
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
@@ -70,15 +70,16 @@ def json_queue(request):
     queue = list(Folder.objects.filter(selected=True).order_by('order'))
     try:
         current_folder = Folder.objects.get(now_playing=True)
+        queue.remove(current_folder)
     except ObjectDoesNotExist:
         current_folder = None
-    queue.remove(current_folder)
     queue_hash = hashlib.md5("".join([f.disk_path.encode('ascii','ignore') for f in queue])).hexdigest()
     context = {
-        "current": model_to_dict(current_folder),
+        "current": None if current_folder is None else model_to_dict(current_folder),
         "queue": [model_to_dict(f) for f in queue],
         "hash": queue_hash
     }
+    logger.info(u"json_queue context: {}".format(context))
         
     return JsonResponse(context)
 
@@ -190,6 +191,13 @@ def toggle_folder(request, folder_id):
 
     return JsonResponse({"selected": folder.selected, "converting": converting})
 
+def move_folder(request, folder_id, old_position, new_position):
+    folder = Folder.objects.get(pk=folder_id)
+    logger.info("Moving folder {} from position {} to {}".format(folder.name, old_position, new_position))
+    folder.move(int(old_position), int(new_position))
+
+    return HttpResponse("OK")
+
 def move_folder_top(request, folder_id):
     folder = Folder.objects.get(pk=folder_id)
     folder.top()
@@ -213,6 +221,17 @@ def move_folder_bottom(request, folder_id):
     folder.bottom()
 
     return HttpResponse("OK")
+
+def set_queue(request):
+    logger.info(request.POST)
+    queue = request.POST.getlist('queue[]')
+    queue = [int(i) for i in queue]
+    logger.info("Queue, type: {}, {}".format(queue, type(queue)))
+
+    Folder.objects.set_queue(queue)
+
+    return HttpResponse("OK")
+    
 
 def import_collection(request):
     root_dir = request.POST['root_dir']

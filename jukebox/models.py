@@ -3,8 +3,17 @@ from __future__ import unicode_literals
 import os.path
 
 from django.conf import settings
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Min, Max
+
+class FolderManager(models.Manager):
+
+    def set_queue(self, queue):
+        """ queue should be an array of folder ids """
+        with transaction.atomic():
+            Folder.objects.filter(now_playing=True).update(order=0)
+            for index,folder_id in enumerate(queue):
+                Folder.objects.filter(pk=folder_id).update(order=index+1)
 
 class Folder(models.Model):
     name = models.CharField("name", max_length=255)
@@ -14,6 +23,8 @@ class Folder(models.Model):
     selected = models.BooleanField("selected", default=False)
     now_playing = models.BooleanField(default=False, db_index=True)
     order = models.IntegerField("order", default=0, db_index=True)
+
+    objects = FolderManager()
 
     def __str__(self):
         return self.disk_path
@@ -42,6 +53,33 @@ class Folder(models.Model):
         largest_order = Folder.objects.aggregate(Max('order'))["order__max"]
         self.order = largest_order + 1
         self.save()
+
+    def move(self, old_position, new_position):
+        # ids of queues folders, in order
+        queue = list(Folder.objects.filter(selected=True, now_playing=False).order_by("order"))
+        if new_position == old_position:
+            return 
+        if new_position < old_position:
+            # Move up
+            # move all folders from new_position to old_position one down
+            new_order = queue[new_position].order
+            for index in range(new_position, old_position):
+                folder = queue[index]
+                last = folder.order
+                folder.order += 1
+                folder.save()
+            self.order = new_order
+            self.save()
+        else:
+            # Move down
+            # move all folder from old_position to new_position one up
+            new_order = queue[new_position].order
+            for index in range(old_position+1, new_position+1):
+                folder = queue[index]
+                folder.order -= 1
+                folder.save()
+            self.order = new_order
+            self.save()
 
     class Meta:
         ordering = ["parent__id", "name"]

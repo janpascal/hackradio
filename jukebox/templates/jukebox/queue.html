@@ -8,17 +8,17 @@
 
 <div>
 
+    <p>&nbsp;</p>
 
-  <p>&nbsp;</p>
-
-        <table id="queue" class="table table-striped">
-            <thead>
-            <tr><th colspan="6" width="5%"></th><th>Folder path</th></tr>
-            </thead>
-            <tbody>
-            <!-- Filled by AJAX -->
-            </tbody>
-        </table>
+    <table id="queue" class="table table-striped">
+        <thead>
+        <tr><th colspan="1" width="5%"></th><th>Queue (drag and drop to rearrange)</th></tr>
+        <tr id="current_folder"></td>
+        </thead>
+        <tbody>
+        <!-- Filled by AJAX -->
+        </tbody>
+    </table>
 
 </div>
 
@@ -28,31 +28,18 @@
 <script id="row-template" type="text/x-jsrender">
 <tr class="queued_folder" data-folderid="{{:id}}"{{if now_playing}} id="current_folder"{{/if}}>
 {{if now_playing}}
-    <td colspan="5" align="center"><em>Now playing</em></td>
+    <td class="stop_current_folder"><a href="#"><span class="glyphicon glyphicon-stop" aria-hidden="true"></span></a></td>
 {{else}}
-    {{if ~first}}
-        <td colspan="2" />
-    {{else}}
-        <td class="move_top"><a href="#"><span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></a></td>
-        <td class="move_up"><a href="#"><span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span></a></td>
-    {{/if}}
     <td class="remove"><a href="#"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></td>
-    {{if ~last}}
-        <td colspan="2" />
-    {{else}}
-        <td class="move_down"><a href="#"><span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span></a></td>
-        <td class="move_bottom"><a href="#"><span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span></a></td>
-    {{/if}}
 {{/if}}
-<td>
+<td>{{:name}} ({{:disk_path}})
   <small class="label label-info songs_button" 
         data-container="body"
-        data-folderid="{{:id}}" data-toggle="popover" data-trigger="hover" 
+        data-folderid="{{:id}}" data-toggle="popover" data-trigger="hover"         
         title="Songs in {{:name}}" data-html="true" data-content="To be Filled In">
         Songs
   </small>
 </td>
-<td>{{:name}} ({{:disk_path}})</td>
 </tr>
 </script>
 
@@ -65,37 +52,9 @@
 
 <script type="text/javascript">
 
-function move_folder_top(event) {
-    folderid = $(this).parent().attr('data-folderid');
-    $.get(Urls['jukebox:move_folder_top'](folderid), function(data){
-        update_queue();
-    });
-}
-
-function move_folder_up(event) {
-    folderid = $(this).parent().attr('data-folderid');
-    $.get(Urls['jukebox:move_folder_up'](folderid), function(data){
-        update_queue();
-    });
-}
-
-function move_folder_down(event) {
-    folderid = $(this).parent().attr('data-folderid');
-    $.get(Urls['jukebox:move_folder_down'](folderid), function(data){
-        update_queue();
-    });
-}
-
-function move_folder_bottom(event) {
-    folderid = $(this).parent().attr('data-folderid');
-    $.get(Urls['jukebox:move_folder_bottom'](folderid), function(data){
-        update_queue();
-    });
-}
-
 function deselect_folder(event) {
     folderid = $(this).parent().attr('data-folderid');
-    $.get(Urls['jukebox:toggle_folder'](folderid), function(data){
+    $.get(Urls['jukebox:deselect_folder'](folderid), function(data){
         update_queue();
     });
 }
@@ -113,10 +72,14 @@ function update_queue() {
         new_queue_hash = data.hash
         if (new_queue_hash != current_queue_hash) {
             //alert("Queue changed");
-            table = $("table#queue");
+            var table = $("table#queue");
 
-            html = $("#row-template").render(data.current, {"now_playing": true,
-            "first": false, "last": false});
+            var now_playing_row = $("#row-template").render(data.current, 
+                {"now_playing": true, "first": false, "last": false});
+            table.find("#current_folder").replaceWith(now_playing_row);
+            fill_song_popover(data.current.id);
+
+            var html = "";
             $.each(data.queue, function(i,folder) {
                 first = (i == 0);
                 last = (i == data.queue.length - 1);
@@ -126,27 +89,47 @@ function update_queue() {
             });
 
             table.find("tbody").html(html);
-
-            fill_song_popover(data.current.id);
             $.each(data.queue, function(i, item) {
                 fill_song_popover(item.id);
             });
-            $("td.move_top").click(move_folder_top);
-            $("td.move_up").click(move_folder_up);
-            $("td.move_down").click(move_folder_down);
-            $("td.move_bottom").click(move_folder_bottom);
-            $("td.remove").click(deselect_folder);
 	    $('[data-toggle="popover"]').popover();
+
             current_queue_hash = new_queue_hash;
         }
+    });
+}
+
+function stop_current_folder_click(event) {
+  $.get(Urls['jukebox:skip_current_folder'](), function(data){
+      setTimeout(update_queue, 500);
     });
 }
 
 $(document).ready( function() {
     current_queue_hash = ""
 
+    $("#queue").on("click", ".stop_current_folder", stop_current_folder_click);
+    $("#queue").on("click", "td.remove", deselect_folder);
+
     update_queue();
     setInterval(update_queue, 5000);
+
+        // "items": "tr.queued_folder :not(.now_playing)",
+    $("#queue tbody").sortable({
+        "items": "tr:not(.now_playing)",
+        "update": function(event, ui) {
+            var sorted_ids = $("#queue tbody").sortable("toArray",{
+                "attribute": "data-folderid"});
+            var post_data = {
+                "queue": sorted_ids,
+                "csrfmiddlewaretoken": "{{ csrf_token }}"
+            }
+            $.post(Urls['jukebox:set_queue'](), post_data, function(data){
+                // update_queue();
+            });
+        }
+    });
+
 });
 </script>
 {% endblock %}   
