@@ -115,6 +115,12 @@ $(document).ready( function() {
                 'a_attr': {'class': 'tree_album'}
             }
         },
+        "state" : { 
+            "filter" : function (k) { 
+                delete k.core.selected; 
+                return k; 
+            } 
+        },
         'core' : {
             'multiple': true,
             'data': function(node, cb) {
