@@ -6,6 +6,11 @@ import fnmatch
 import logging
 import os
 import os.path
+import tempfile
+import zipfile
+
+from django.conf import settings
+from django.core.files.uploadedfile import TemporaryUploadedFile
 
 from .models import Folder, Song
 
@@ -58,3 +63,27 @@ def recurse_import_dir(root_path, parent):
         folder.save()
 
     return found_something
+
+def import_ziparchive(name, f):
+    if not isinstance(f, TemporaryUploadedFile):
+        logger.error("Uploaded file should be a TemporaryUploadedFile")
+        return
+
+    logger.info("Uploaded tempfile: {}".format(f.temporary_file_path()))
+    if not zipfile.is_zipfile(f.temporary_file_path()):
+        logger.error("Uploaded file should be a zip file")
+        return
+
+    root_dir = tempfile.mkdtemp(prefix='import', dir=settings.JUKEBOX_UPLOAD_DIR)
+    archive_dir = os.path.join(root_dir, name)
+
+    try:
+        os.mkdirs(archive_dir)
+    except:
+        pass
+
+    with zipfile.ZipFile(f.temporary_file_path(), 'r') as myzip:
+        myzip.extractall(archive_dir)
+        import_collection(archive_dir)
+
+

@@ -1,7 +1,4 @@
-- Rearrange URLs. Pages should have a .html suffix. Also fix the index.html for
-  the default page (redirect to it)
-- Drag and drop in "Queue"
-- Remove folders in "Select Folders"
+- Rearrange URLs. Also fix the index.html for the default page (redirect to it)
 - Add a proper README
-- Upload tree from client machine
-- Rearrange tree (drag and drop?)
+- Fix javascript event handlers for dynamic HTML
+- Use proper POST for ajax calls that change state

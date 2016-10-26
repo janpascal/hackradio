@@ -70,10 +70,12 @@ TEMPLATES = [
     },
 ]
 
+# Force file upload to temporary file, to make zip file processing easier
+FILE_UPLOAD_HANDLERS = [
+    'django.core.files.uploadhandler.TemporaryFileUploadHandler'
+]
+
 WSGI_APPLICATION = 'hackradio.wsgi.application'
-
-TWEET_BASEPATH = 'results'
-
 
 config = ConfigParser()
 config.read(os.path.join(BASE_DIR, 'hackradio', 'local.ini'))
@@ -100,6 +102,8 @@ JUKEBOX_SHOUT_URL = config.get('jukebox', 'JUKEBOX_SHOUT_URL')
 JUKEBOX_SHOUT_PUBLIC = config.getint('jukebox', 'JUKEBOX_SHOUT_PUBLIC')
 
 JUKEBOX_CACHE_DIR = config.get('jukebox', 'JUKEBOX_CACHE_DIR')
+JUKEBOX_UPLOAD_DIR = config.get('jukebox', 'JUKEBOX_UPLOAD_DIR')
+
 JUKEBOX_STREAM_URL = config.get('jukebox', 'JUKEBOX_STREAM_URL')
 JUKEBOX_CONVERT_CONCURRENCY = config.getint('jukebox', 'JUKEBOX_CONVERT_CONCURRENCY');
 

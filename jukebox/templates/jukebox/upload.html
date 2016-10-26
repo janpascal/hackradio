@@ -1,0 +1,77 @@
+{% extends "jukebox/base.html" %}
+<!-- vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4 
+-->
+
+{% block title %}Hack Radio{% endblock %}   
+
+{% block content %}
+
+<div>
+
+    <p>&nbsp;</p>
+
+    <p>Upload a collection of mp3, flac, ogg, m4a or mpc audio files. The
+    uploaded zip file should contain a number of directories containing music
+    files. Deeper hierarchies are allowed.</p>
+
+    <form action="{% url 'jukebox:upload' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+        {{ form.as_p }}
+        </div>
+        <input type="submit" class="btn btn-primary" value="Upload"></input>
+    </form>
+
+</div>
+
+<!-- Modal dialogs -->
+
+<div id="import_modal" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Importing music...</h4>
+      </div>
+      <div class="modal-body">
+        <p>Importing music from <span id="modal_import_dir"><!--AJAX--></span>&hellip;
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<script type="text/javascript">
+
+function update_import_modal() {
+    $.get(Urls['jukebox:import_status'](), function(data){
+        $("#modal_import_dir").text(data.current_import_dir);
+    });
+}
+
+function import_clicked(event) {
+    root_dir = $(this).parent().find("input#rootdir").val()
+    csrf_token = $(this).parent().find("input[name=csrfmiddlewaretoken]").attr("value")
+    post_data = {
+        "root_dir": root_dir,
+        "csrfmiddlewaretoken": csrf_token
+    }
+
+    $('#import_modal').modal('show');
+    update_modal_interval = setInterval(update_import_modal, 200);
+    $.post(Urls['jukebox:import_collection'](), post_data, function(data){
+        $('#import_modal').modal('hide')
+        clearInterval(update_modal_interval);
+    });
+
+    return false;
+}
+
+$(document).ready( function() {
+    $("button#importbutton").click(import_clicked);
+});
+</script>
+{% endblock %}   

@@ -11,7 +11,7 @@ from django.conf import settings
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms.models import model_to_dict
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
@@ -20,6 +20,7 @@ from models import Folder, Song
 import queue_player
 import util
 import converter
+from forms import UploadArchiveForm
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +54,27 @@ def import_page(request):
     }
     return render(request, "jukebox/import.html", context)
 
+def upload_page(request):
+    if request.method == 'POST':
+        form = UploadArchiveForm(request.POST, request.FILES)
+        if form.is_valid():
+            name = request.POST['name']
+            logger.info("File uploaded: {} ({})".format(name, request.FILES['file']))
+            util.import_ziparchive(name, request.FILES['file'])
+            return HttpResponseRedirect(reverse('jukebox:select_folders'))
+        else:
+            logger.warning("Form not valid...")
+            logger.info("File data: {}".format(request.FILES))
+    else:
+        form = UploadArchiveForm()
+
+    context = {
+        "page_id": "upload",
+        "stream_url": settings.JUKEBOX_STREAM_URL,
+        'form': form
+    }
+    return render(request, "jukebox/upload.html", context)
+
 # JSON data requests
 
 def now_playing(request):
@@ -79,7 +101,7 @@ def json_queue(request):
         "queue": [model_to_dict(f) for f in queue],
         "hash": queue_hash
     }
-    logger.info(u"json_queue context: {}".format(context))
+    #logger.info(u"json_queue context: {}".format(context))
         
     return JsonResponse(context)
 
@@ -122,7 +144,7 @@ def import_status(request):
     result = {
         "current_import_dir": util.current_import_dir(),
     }
-    logger.info("Returning import status: {}".format(result))
+    #logger.info("Returning import status: {}".format(result))
     return JsonResponse(result);
 
 def folder_songs(request, folder_id):
@@ -158,7 +180,7 @@ def select_folder(request, folder_id):
     logger.info("Selecting folder {} ({})".format(folder.name, folder.id))
     
     if not folder.selectable:
-        logger.info("Folder {} not selectable, not selecting!".format(folder.name))
+        logger.warning("Folder {} not selectable, not selecting!".format(folder.name))
         return JsonResponse({"selected": False, "converting": False})
 
     folder.selected = True
@@ -191,10 +213,16 @@ def toggle_folder(request, folder_id):
 
     return JsonResponse({"selected": folder.selected, "converting": converting})
 
-def move_folder(request, folder_id, old_position, new_position):
+def move_folder(request, folder_id, new_parent_id, new_position):
     folder = Folder.objects.get(pk=folder_id)
-    logger.info("Moving folder {} from position {} to {}".format(folder.name, old_position, new_position))
-    folder.move(int(old_position), int(new_position))
+    #    old_parent = Folder.objects.get(pk=old_parent_id)
+    new_parent = Folder.objects.get(pk=new_parent_id)
+    #logger.info("Moving folder {} from parent {} position {} to parent {} pos
+    #        {}".format(folder.name, old_parent, old_position, new_parent, new_position))
+    logger.info("Moving folder {} to parent {} pos {}".format(folder.name,new_parent.name, new_position))
+    folder.parent = new_parent
+    folder.save()
+    #folder.move(int(old_position), int(new_position))
 
     return HttpResponse("OK")
 
@@ -222,6 +250,30 @@ def move_folder_bottom(request, folder_id):
 
     return HttpResponse("OK")
 
+def rename_folder(request, folder_id):
+    folder = Folder.objects.get(pk=folder_id)
+    name = request.POST['name']
+
+    logger.info("Renaming folder {} to {}".format(folder.name, name))
+    folder.name = name
+    folder.save()
+
+    return HttpResponse("OK")
+
+def delete_folder(request, folder_id):
+    folder = Folder.objects.get(pk=folder_id)
+
+    logger.info("Deleting folder {}".format(folder.name))
+    # Automatically also deletes subfolders, but not the files
+    #logger.warning("Warning: subfolder of {} (id: {}) not yet deleted, neither are the songs and the files on disk!".format(folder.name, folder.id))
+    folder.delete()
+
+    return HttpResponse("OK")
+
+# TODO delete all subfolders, and items on disk
+
+    return HttpResponse("OK")
+
 def set_queue(request):
     logger.info(request.POST)
     queue = request.POST.getlist('queue[]')
@@ -231,7 +283,6 @@ def set_queue(request):
     Folder.objects.set_queue(queue)
 
     return HttpResponse("OK")
-    
 
 def import_collection(request):
     root_dir = request.POST['root_dir']

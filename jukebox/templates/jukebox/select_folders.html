@@ -33,6 +33,29 @@
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
+
+<div id="confirm_modal" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Confirm</h4>
+      </div>
+      <div class="modal-body">
+          Are you sure you want to remove <span id="confirm_name">
+              <!-- filled dynamically -->
+          </span> and all subfolders?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal" id="delete">Delete</button>
+        <button type="button" class="btn" data-dismiss="modal">Cancel</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
 <!-- Templates -->
 
 {% verbatim %}
@@ -95,9 +118,21 @@ function fill_song_popover(folderid) {
     });
 }
 
+function fill_song_popover_wait(folderid) {
+    var interval_id = setInterval(function(){
+         // $("li#"+id).length will be zero until the node is loaded
+         if($("li#"+folderid).length != 0){
+             // "exit" the interval loop with clearInterval command
+             clearInterval(interval_id)
+             fill_song_popover(folderid);
+             $('.songs_button[data-toggle="popover"]').popover();
+          }
+    }, 50);
+}
+
 $(document).ready( function() {
     $('#tree').jstree({
-        'plugins': ["wholerow", "state", "checkbox", "types", "conditionalselect"],
+        'plugins': ["wholerow", "state", "checkbox", "types", "conditionalselect", "dnd", "contextmenu"],
         'conditionalselect': function (node, event) {
             return node.original.selectable;
         },
@@ -105,23 +140,80 @@ $(document).ready( function() {
             'three_state': false,
             'visible': false
         },
+        "contextmenu": {
+            "select_node": false,
+            "items": function($node) {
+                var tree = $("#tree").jstree(true);
+                return {
+                    "rename": {
+                        "label": "Rename",
+                        "action": function(obj) {
+                            tree.edit($node, $node.original.name,
+                                    function(node,status,cancelled) {
+                                        var item = $node.original;
+                                        item.name = node.text;
+                                        new_text = $("#folder-text-template").render(item);
+                                        tree.rename_node(node, new_text);
+                                        fill_song_popover_wait(item.id);
+                                        post_data = {
+                                            "name": item.name,
+                                            "csrfmiddlewaretoken": '{{ csrf_token }}'
+                                        }
+                                        $.post(Urls['jukebox:rename_folder'](item.id), post_data)
+                                            .fail(function () {
+                                                alert("Failed to rename");
+                                                tree.refresh();
+                                            });
+                                    });
+                        }
+                    },
+                    "remove": {
+                        "label": "Remove",
+                        "title": "Remove this folder AND ALL SUBFOLDERS",
+                        "action": function(obj) {
+                            $('#confirm_name').text($node.original.name);
+                            $('#confirm_modal').modal({
+                                'backdrop': 'static',
+                                'keyboard': false
+                            }).one('click', '#delete', function() {
+                                tree.delete_node($node);
+                                post_data = {
+                                    "csrfmiddlewaretoken": '{{ csrf_token }}'
+                                }
+                                $.post(Urls['jukebox:delete_folder']($node.id), post_data);
+                            });
+                        }
+                    }
+                };
+            }
+        },
         'types': {
             'root' : {
+                'valid_children': ['folder', 'album']
             },
             'folder' : {
+                'valid_children': ['folder', 'album']
             },
             'album' : {
                 'icon': 'glyphicon glyphicon-music',
-                'a_attr': {'class': 'tree_album'}
+                'a_attr': {'class': 'tree_album'},
+                'valid_children': []
             }
         },
         "state" : { 
             "filter" : function (k) { 
+                // Do not restore selected state of nodes
                 delete k.core.selected; 
                 return k; 
             } 
         },
+        'dnd': {
+            'copy': false,
+            'large_drop_target': true,
+            'drag_selection': false
+        },
         'core' : {
+            'check_callback': true,
             'multiple': true,
             'data': function(node, cb) {
                 if (node.id==="#") {
@@ -130,6 +222,7 @@ $(document).ready( function() {
                         $.each(data.roots, function(i, root) {
                             roots.push({
                                 "text": root.name, 
+                                "name": root.name, 
                                 "id": root.id,
                                 "children": true, 
                                 "selectable": false,
@@ -143,6 +236,7 @@ $(document).ready( function() {
                         $.each(data.children, function(i, item) {
                             children.push({
                                 "text": $("#folder-text-template").render(item),
+                                "name": item.name,
                                 "id": item.id,
                                 "children": item.has_children, 
                                 "selectable": item.selectable,
@@ -153,15 +247,7 @@ $(document).ready( function() {
                             });
 
                             if (item.selectable) {
-                                var interval_id = setInterval(function(){
-                                     // $("li#"+id).length will be zero until the node is loaded
-                                     if($("li#"+item.id).length != 0){
-                                         // "exit" the interval loop with clearInterval command
-                                         clearInterval(interval_id)
-                                         fill_song_popover(item.id);
-                                        $('.songs_button[data-toggle="popover"]').popover();
-                                      }
-                                }, 5);
+                                fill_song_popover_wait(item.id);
                             }
                         });
                         cb(children);
@@ -171,6 +257,7 @@ $(document).ready( function() {
             }
         }
     });
+
     $('#tree').on('select_node.jstree', function(e, data) {
         $.get(Urls['jukebox:select_folder'](data.node.id), function(data){
             if (data.converting) {
@@ -180,10 +267,20 @@ $(document).ready( function() {
             }
         });
     });
+
     $('#tree').on('deselect_node.jstree', function(e, data) {
         $.get(Urls['jukebox:deselect_folder'](data.node.id), function(data) {
         });
     });
+
+    $('#tree').on('move_node.jstree', function (e, data) {
+        $.get(Urls['jukebox:move_folder'](data.node.id, data.parent, data.position))
+            .fail(function () {
+                alert("Failed to move");
+                data.instance.refresh();
+            });
+    })
+
 });
 </script>
 {% endblock %}   
