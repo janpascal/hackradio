@@ -1,0 +1,15 @@
+Changelog for hackradio
+
+v2.0 (Wed Oct 26)
+    Added page "upload.html", upload a zip file with music folders and add it to
+    the music tree;
+    Updates in select_folders.html:
+    - Rearrange folders using drag-and-drop
+    - Rename folders
+    - Delete folders
+
+v1.3 (Mon Oct 24)
+    Make queue sortable using drag-and-drop
+    Highlight current song on index page
+    Add current folder to queue view; remove up/down buttons for bottom/top folders
+
