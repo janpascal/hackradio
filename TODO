@@ -1,4 +1,3 @@
-- Rearrange URLs. Also fix the index.html for the default page (redirect to it)
 - Add a proper README
 - Fix javascript event handlers for dynamic HTML
-- Use proper POST for ajax calls that change state
+- Use POST instead of GET for ajax calls that change state

@@ -15,11 +15,12 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
-from jukebox import views
+from django.views.generic import RedirectView
+
 from django_js_reverse.views import urls_js
 
 urlpatterns = [
-    url(r'^$', views.index, name='index'),
+    url(r'^$', RedirectView.as_view(pattern_name='jukebox:index', permanent=True), name='index'),
     url(r'^jukebox/', include('jukebox.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^jsreverse/', urls_js, name='js_reverse'),

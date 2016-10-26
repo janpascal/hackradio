@@ -275,10 +275,9 @@ def delete_folder(request, folder_id):
     return HttpResponse("OK")
 
 def set_queue(request):
-    logger.info(request.POST)
     queue = request.POST.getlist('queue[]')
     queue = [int(i) for i in queue]
-    logger.info("Queue, type: {}, {}".format(queue, type(queue)))
+    logger.info("Set queue order: {}".format(queue))
 
     Folder.objects.set_queue(queue)
 
