@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -e
+#set -x
+
+. /usr/share/debconf/confmodule
+. /usr/share/dbconfig-common/dpkg/prerm.mysql 
+dbc_go hackradio $@
+
+# dh_apache2 a2disconf hackradio
+
+#DEBHELPER#

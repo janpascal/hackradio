@@ -1,0 +1,20 @@
+This is the Debian README for hackradio
+
+Before using hackradio, please configure it. The configuration file is located in /etc/hackradio/settings.py
+You will probably need to edit the following settings:
+
+ALLOWED_HOSTS: Add the host name your web server is reachable as
+LANGUAGE_CODE, TIME_ZONE, etc: Edit to taste
+SECRET_KEY: Don't touch, please
+JUKEBOX_SHOUT_*: How to connect to your icecast server
+JUKEBOX_STREAM_URL: URL clients can use to listen to the stream
+JUKEBOX_CONVERT_CONCURRENCY: How many parallel processes to use for the conversion to mp3
+
+Also have a look at /etc/apache2/conf-enabled/hackradio. You may want to change the URL path the
+application is made available at (by default /hackradio/jukebox/), or have the application only
+available in one (or more) virtual hosts, or add an extra alias.
+
+After configuring, you will need to (re)start the streaming daemon:
+# systemctl restart hackradio
+and the Apache web server:
+# systemctl restart apache2

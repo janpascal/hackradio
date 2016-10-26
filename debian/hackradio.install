@@ -1,0 +1,13 @@
+manage.py usr/share/hackradio/
+jukebox/*.py usr/share/hackradio/jukebox/
+hackradio/*.py usr/share/hackradio/hackradio/
+jukebox/migrations/*.py usr/share/hackradio/jukebox/migrations
+jukebox/templates/jukebox/* usr/share/hackradio/templates/jukebox/
+jukebox/static/jukebox/favicon.ico usr/share/hackradio/static/jukebox/
+jukebox/static/jukebox/stylesheets/main.css usr/share/hackradio/static/jukebox/stylesheets/
+jukebox/static/jukebox/javascript/jstree.* usr/share/hackradio/static/jukebox/javascript/
+jukebox/static/jukebox/javascript/themes/* usr/share/hackradio/static/jukebox/javascript/themes/
+jukebox/static/jukebox/fonts/* usr/share/hackradio/static/jukebox/fonts/
+jukebox/static/jukebox/images/* usr/share/hackradio/static/jukebox/images/
+debian/settings.py.template usr/share/hackradio/debian/
+debian/dbsettings.py.template usr/share/hackradio/debian/

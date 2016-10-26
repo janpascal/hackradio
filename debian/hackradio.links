@@ -1,0 +1,8 @@
+usr/share/javascript/bootstrap/js/bootstrap.min.js usr/share/hackradio/static/jukebox/javascript/bootstrap.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/hackradio/static/jukebox/javascript/jquery.min.js
+usr/share/javascript/jsrender/jsrender.min.js usr/share/hackradio/static/jukebox/javascript/jsrender.min.js
+usr/share/javascript/jquery-ui/jquery-ui.min.js usr/share/hackradio/static/jukebox/javascript/jquery-ui.min.js
+usr/share/javascript/bootstrap/css/bootstrap.min.css usr/share/hackradio/static/jukebox/stylesheets/bootstrap.min.css
+usr/share/javascript/jquery-ui-themes/ui-lightness/jquery-ui.min.css usr/share/hackradio/static/jukebox/stylesheets/jquery-ui.min.css
+#usr/share/javascript/jquery-treetable/jquery.treeTable.css usr/share/hackradio/static/jukebox/stylesheets/jquery.treeTable.css
+#etc/hackradio/apache.conf etc/apache2/conf-available/hackradio.conf

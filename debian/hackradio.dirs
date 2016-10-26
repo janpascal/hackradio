@@ -1,0 +1,9 @@
+usr/share/hackradio/static/jukebox/javascript
+usr/share/hackradio/static/jukebox/stylesheets
+usr/share/hackradio/static/jukebox/fonts
+/etc/hackradio
+/etc/apache2/conf-available
+/var/lib/hackradio
+/var/lib/hackradio/upload
+/var/log/hackradio
+/var/cache/hackradio/converted_files

@@ -1,0 +1,7 @@
+- display warning in web app if not configured
+- test install/upgrade/remove/reinstall/purge etc.
+- logrotate
+- timestamp in logs
+- log file name
+- fix symlinks for treetable
+

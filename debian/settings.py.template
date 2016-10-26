@@ -1,0 +1,43 @@
+DEBUG = False
+
+# Fill in the host names your web server uses
+ALLOWED_HOSTS = ["127.0.0.1"]
+
+# Internationalization
+# https://docs.djangoproject.com/en/1.9/topics/i18n/
+
+LANGUAGE_CODE = 'en-us'
+TIME_ZONE = 'Europe/Amsterdam'
+USE_I18N = True
+USE_L10N = True
+USE_TZ = True
+
+# Application secret key, generated randomly on first installation
+SECRET_KEY = '__SECRET_KEY__'
+
+# Paths
+STATIC_URL = '/hackradio/static/'
+
+# Icecast stream configuration
+JUKEBOX_SHOUT_HOST = 'localhost'
+JUKEBOX_SHOUT_PORT = 8000
+JUKEBOX_SHOUT_USER = 'source'
+JUKEBOX_SHOUT_PASSWORD = 'hackme'
+JUKEBOX_SHOUT_MOUNT = '/hackradio'
+JUKEBOX_SHOUT_NAME = 'Hack Radio'
+JUKEBOX_SHOUT_GENRE = 'Unknown'
+JUKEBOX_SHOUT_URL = 'http://www.example.com'
+JUKEBOX_SHOUT_PUBLIC = 1
+
+# URL clients can use to listen to stream
+JUKEBOX_STREAM_URL = 'http://www.example.com:8000/hackradio.m3u'
+
+# How many parallel processes to use for conversion to mp3
+JUKEBOX_CONVERT_CONCURRENCY = 4
+
+# Uploaded ZIP files are unpacked here
+JUKEBOX_UPLOAD_DIR = '/var/lib/hackradio/upload'
+
+# Converted FLAC, m4a, ogg etc files are stored here
+JUKEBOX_CACHE_DIR = '/var/cache/hackradio/converted_files'
+

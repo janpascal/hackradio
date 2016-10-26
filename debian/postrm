@@ -1,0 +1,25 @@
+#!/bin/sh
+
+set -e
+#set -x
+
+if [ -f /usr/share/debconf/confmodule ]; then
+    . /usr/share/debconf/confmodule
+fi
+if [ -f /usr/share/dbconfig-common/dpkg/postrm.mysql ]; then
+    . /usr/share/dbconfig-common/dpkg/postrm.mysql
+    dbc_go hackradio $@
+fi
+
+
+if [ "$1" = "purge" ]; then
+    for conffile in dbsettings.py settings.py; do
+	rm -f /etc/hackradio/$conffile
+	if which ucf >/dev/null 2>&1; then
+		ucf --debconf-ok --purge /etc/hackradio/$conffile
+		ucfr --purge hackradio /etc/hackradio/$conffile
+	fi
+    done
+fi
+
+#DEBHELPER#

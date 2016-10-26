@@ -1,0 +1,11 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+DESTDIR := debian/hackradio
+
+%:
+	dh $@ --with python2,systemd,apache2
+
+override_dh_auto_install:
+	# Do nothing fancy, just dh_install and friends which will happen automatically anyway
+

@@ -1,0 +1,13 @@
+# Database configuration
+# Managed by dbconfig-common
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends._DBC_DBTYPE_',
+        'HOST': '_DBC_DBSERVER_',
+        'NAME': '_DBC_DBNAME_',
+        'USER': '_DBC_DBUSER_',
+        'PASSWORD': '_DBC_DBPASS_',
+        'OPTIONS': {'charset': 'utf8', 'sql_mode': 'STRICT_TRANS_TABLES'},
+    }
+}
+

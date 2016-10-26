@@ -1,0 +1,146 @@
+Description: Patch settings to fit in Debian system
+Author: Jan-Pascal van Best <janpascal@vanbest.org>
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+Index: hackradio/hackradio/settings.py
+===================================================================
+--- hackradio.orig/hackradio/settings.py	2016-10-26 11:57:52.463259722 +0200
++++ hackradio/hackradio/settings.py	2016-10-26 11:58:36.425791811 +0200
+@@ -20,13 +20,10 @@
+ # Quick-start development settings - unsuitable for production
+ # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
+ 
+-# SECURITY WARNING: keep the secret key used in production secret!
+-SECRET_KEY = 'j$6lcn^ua=%&f7ac5xrm65f+ba&23y+lw+rf^3byy-qdll$+yr'
+-
+ # SECURITY WARNING: don't run with debug turned on in production!
+-DEBUG = True
++DEBUG = False
+ 
+-ALLOWED_HOSTS = []
++ALLOWED_HOSTS = ['127.0.0.1']
+ 
+ 
+ # Application definition
+@@ -57,7 +54,7 @@
+ TEMPLATES = [
+     {
+         'BACKEND': 'django.template.backends.django.DjangoTemplates',
+-        'DIRS': [],
++        'DIRS': ['/usr/share/hackradio/templates'],
+         'APP_DIRS': True,
+         'OPTIONS': {
+             'context_processors': [
+@@ -77,46 +74,6 @@
+ 
+ WSGI_APPLICATION = 'hackradio.wsgi.application'
+ 
+-config = ConfigParser()
+-config.read(os.path.join(BASE_DIR, 'hackradio', 'local.ini'))
+-
+-#DATABASES = {
+-#    'default': {
+-#        'ENGINE': config.get('database', 'ENGINE'),
+-#        'NAME': config.get('database', 'NAME'),
+-#        'USER': config.get('database', 'USER'),
+-#        'PASSWORD': config.get('database', 'PASSWORD'),
+-#        'HOST': config.get('database', 'HOST'),
+-#        'OPTIONS': {'charset': 'utf8mb4'},
+-#    }
+-#}
+-
+-JUKEBOX_SHOUT_HOST = config.get('jukebox', 'JUKEBOX_SHOUT_HOST')
+-JUKEBOX_SHOUT_PORT = config.getint('jukebox', 'JUKEBOX_SHOUT_PORT')
+-JUKEBOX_SHOUT_USER = config.get('jukebox', 'JUKEBOX_SHOUT_USER')
+-JUKEBOX_SHOUT_PASSWORD = config.get('jukebox', 'JUKEBOX_SHOUT_PASSWORD')
+-JUKEBOX_SHOUT_MOUNT = config.get('jukebox', 'JUKEBOX_SHOUT_MOUNT')
+-JUKEBOX_SHOUT_NAME = config.get('jukebox', 'JUKEBOX_SHOUT_NAME')
+-JUKEBOX_SHOUT_GENRE = config.get('jukebox', 'JUKEBOX_SHOUT_GENRE')
+-JUKEBOX_SHOUT_URL = config.get('jukebox', 'JUKEBOX_SHOUT_URL')
+-JUKEBOX_SHOUT_PUBLIC = config.getint('jukebox', 'JUKEBOX_SHOUT_PUBLIC')
+-
+-JUKEBOX_CACHE_DIR = config.get('jukebox', 'JUKEBOX_CACHE_DIR')
+-JUKEBOX_UPLOAD_DIR = config.get('jukebox', 'JUKEBOX_UPLOAD_DIR')
+-
+-JUKEBOX_STREAM_URL = config.get('jukebox', 'JUKEBOX_STREAM_URL')
+-JUKEBOX_CONVERT_CONCURRENCY = config.getint('jukebox', 'JUKEBOX_CONVERT_CONCURRENCY');
+-
+-# Database
+-# https://docs.djangoproject.com/en/1.10/ref/settings/#databases
+-
+-DATABASES = {
+-    'default': {
+-        'ENGINE': 'django.db.backends.sqlite3',
+-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+-    }
+-}
+-
+ 
+ # Password validation
+ # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
+@@ -151,16 +108,19 @@
+ USE_TZ = True
+ 
+ 
+-# Static files (CSS, JavaScript, Images)
+-# https://docs.djangoproject.com/en/1.10/howto/static-files/
+-
+-STATIC_URL = '/static/'
+-
+ # Logging
+ 
+ LOGGING = {
+     'version': 1,
+     'disable_existing_loggers': False,
++    'formatters': {
++        'verbose': {
++            'format': '%(levelname)s [%(asctime)s] [P%(process)04x] [T%(thread)08x] [%(module)s] %(message)s'
++        },
++        'simple': {
++            'format': '%(levelname)s %(message)s'
++        },
++    },
+     'handlers': {
+         'console': {
+             'class': 'logging.StreamHandler',
+@@ -168,19 +128,35 @@
+         'file': {
+             'level': 'DEBUG',
+             'class': 'logging.FileHandler',
+-            'filename': 'django_debug.log',
++            'filename': '/var/log/hackradio/hackradio_debug.log',
++            'formatter': 'verbose',
++        },
++        'mail_admin': {
++            'level': 'ERROR',
++            'class': 'django.utils.log.AdminEmailHandler',
+         },
+     },
+     'loggers': {
+         'django': {
+-            'handlers': ['console'],
+-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
++            'handlers': ['file', 'mail_admin'],
++            'level': os.getenv('DJANGO_LOG_LEVEL', 'WARNING'),
+             'propagate': True
+         },
+         'jukebox': {
+-            'handlers': ['console'],
+-            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
++            'handlers': ['file', 'mail_admin'],
++            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+             'propagate': True
+         },
+     },
+ }
++
++# Default paths
++STATIC_ROOT = '/usr/share/hackradio/static'
++STATIC_URL = '/hackradio/static/'
++
++# Database settings, provided by dbconfig_common
++if os.path.exists("/etc/hackradio/dbsettings.py"):
++    exec(open("/etc/hackradio/dbsettings.py").read())
++
++if os.path.exists("/etc/hackradio/settings.py"):
++    exec(open("/etc/hackradio/settings.py").read())

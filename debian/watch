@@ -1,0 +1,4 @@
+version=3
+opts="downloadurlmangle=s/.*refs\/tags\/v(\d\S*)/http:\/\/www.vanbest.org\/gitweb\/gitweb.cgi\/hackradio\/snapshot\/v$1/,filenamemangle=s/.*refs\/tags\/v(\d\S*)/hackradio-$1.tar.gz/" \
+  http://www.vanbest.org/gitweb/?p=hackradio;a=tags \
+  .*h=refs/tags/v?(\d\S*)
