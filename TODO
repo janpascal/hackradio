@@ -2,9 +2,5 @@
 - Fix javascript event handlers for dynamic HTML
 - Use POST instead of GET for ajax calls that change state
 - "Play now" button for songs in song list in queue and select_folders pages
-- "find" button in tree view, for lost items
-- "enqueue" context menu item in tree view, instead of selection
 - "play next" context menu item in tree view, maybe also in queue view
-- Check for local Javascript variables without "var" (making them global :()
-- Fix XSS problems
 - Add some feedback when uploading zip file
