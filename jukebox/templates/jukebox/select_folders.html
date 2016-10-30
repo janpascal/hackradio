@@ -161,10 +161,10 @@ $(document).ready( function() {
                                     function(node,status,cancelled) {
                                         var item = $node.original;
                                         item.name = node.text;
-                                        new_text = $("#folder-text-template").render(item);
+                                        var new_text = $("#folder-text-template").render(item);
                                         tree.rename_node(node, new_text);
                                         fill_song_popover_wait(item.id);
-                                        post_data = {
+                                        var post_data = {
                                             "name": item.name,
                                             "csrfmiddlewaretoken": '{{ csrf_token }}'
                                         }
@@ -186,7 +186,7 @@ $(document).ready( function() {
                                 'keyboard': false
                             }).one('click', '#delete', function() {
                                 tree.delete_node($node);
-                                post_data = {
+                                var post_data = {
                                     "csrfmiddlewaretoken": '{{ csrf_token }}'
                                 }
                                 $.post(Urls['jukebox:delete_folder']($node.id), post_data);

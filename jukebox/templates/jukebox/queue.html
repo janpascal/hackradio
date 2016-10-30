@@ -53,7 +53,7 @@
 <script type="text/javascript">
 
 function deselect_folder(event) {
-    folderid = $(this).parent().attr('data-folderid');
+    var folderid = $(this).parent().attr('data-folderid');
     $.get(Urls['jukebox:deselect_folder'](folderid), function(data){
         update_queue();
     });
@@ -61,15 +61,15 @@ function deselect_folder(event) {
 
 function fill_song_popover(folderid) {
     $.get(Urls['jukebox:folder_songs'](folderid), function(data){
-        button = $(".songs_button[data-folderid='" + folderid + "']");
-        html = $("#popover-template").render(data);
+        var button = $(".songs_button[data-folderid='" + folderid + "']");
+        var html = $("#popover-template").render(data);
         button.attr('data-content', html);
     });
 }
 
 function update_queue() {
   $.get("{% url 'jukebox:json_queue' %}", function(data){
-        new_queue_hash = data.hash
+        var new_queue_hash = data.hash
         if (new_queue_hash != current_queue_hash) {
             //alert("Queue changed");
             var table = $("table#queue");
@@ -81,9 +81,9 @@ function update_queue() {
 
             var html = "";
             $.each(data.queue, function(i,folder) {
-                first = (i == 0);
-                last = (i == data.queue.length - 1);
-                row = $("#row-template").render(folder, {"now_playing": false,
+                var first = (i == 0);
+                var last = (i == data.queue.length - 1);
+                var row = $("#row-template").render(folder, {"now_playing": false,
                 "first": first, "last": last});
                 html += row;
             });

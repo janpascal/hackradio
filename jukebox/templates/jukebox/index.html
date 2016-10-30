@@ -54,7 +54,7 @@ function skip_current_folder_click(event) {
 }
 
 function skip_click(event) {
-    songid = $(this).parent().attr('data-songid');
+    var songid = $(this).parent().attr('data-songid');
     $.get(Urls['jukebox:skip_song'](songid), function(data){
         force_update = true;
         update_now_playing();
@@ -62,7 +62,7 @@ function skip_click(event) {
 }
 
 function enable_click(event) {
-    songid = $(this).parent().attr('data-songid');
+    var songid = $(this).parent().attr('data-songid');
     $.get(Urls['jukebox:reenable_song'](songid), function(data){
         force_update = true;
         update_now_playing();
@@ -78,9 +78,9 @@ function update_now_playing() {
         if (force_update || new_folder_id != current_folder_id) {
             force_update = false;
 
-            table = $("table#now_playing");
+            var table = $("table#now_playing");
 
-            html = $("#row-template").render(data.now_playing);
+            var html = $("#row-template").render(data.now_playing);
             table.find("tbody").html(html);
 
             $("td.skip").click(skip_click);
@@ -89,7 +89,7 @@ function update_now_playing() {
 
             current_folder_id = new_folder_id;
         }
-        new_song_id = data.current_song.id
+        var new_song_id = data.current_song.id
         if (new_song_id != current_song_id) {
             $("tr[data-songid="+current_song_id+"]").removeClass("current_song");
             $("tr[data-songid="+new_song_id+"]").addClass("current_song");

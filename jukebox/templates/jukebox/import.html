@@ -55,9 +55,9 @@ function update_import_modal() {
 }
 
 function import_clicked(event) {
-    root_dir = $(this).parent().find("input#rootdir").val()
-    csrf_token = $(this).parent().find("input[name=csrfmiddlewaretoken]").attr("value")
-    post_data = {
+    var root_dir = $(this).parent().find("input#rootdir").val()
+    var csrf_token = $(this).parent().find("input[name=csrfmiddlewaretoken]").attr("value")
+    var post_data = {
         "root_dir": root_dir,
         "csrfmiddlewaretoken": csrf_token
     }
@@ -74,11 +74,11 @@ function import_clicked(event) {
 
 function fill_song_popover(folderid) {
     $.get(Urls['jukebox:folder_songs'](folderid), function(data){
-        content = ""
+        var content = ""
         $.each(data.songs, function(i, song) {
             content += "<p>" + song.filename + "</p>";
         });
-        button = $(".songs_button[data-folderid='" + folderid + "']");
+        var button = $(".songs_button[data-folderid='" + folderid + "']");
 
         button.attr('data-content', content);
     });
