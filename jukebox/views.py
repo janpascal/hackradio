@@ -134,6 +134,29 @@ def json_roots(request):
         
     return JsonResponse(context)
 
+def search_folder(request):
+    """ Actually return a list of the nodes that need to be opened to
+    reveal the nodes searched for """
+    str = request.GET['str']
+    context_id = request.GET['context']
+
+    #logger.info("Search string: {}; context node id: {}".format(str, context_id))
+
+    ids = reduce(
+        lambda a,b: a + b,
+        [folder.parent_ids() for folder in Folder.objects.filter(name__icontains=str)],
+        []
+    )
+
+    response = {
+        "matching_ids": ids
+    }
+
+    logger.info("Returning search result: {}".format(response))
+
+    return JsonResponse(response)
+
+
 def folder_subdirs(request, folder_id):
     folder = Folder.objects.get(pk=folder_id)
     children = Folder.objects.filter(parent_id=folder_id).all()

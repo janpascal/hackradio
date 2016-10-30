@@ -10,7 +10,13 @@
 
     <p>&nbsp;</p>
 
-    <div id="tree" />
+    <div align="right">
+        <!-- <input type="text" id="search_box" value="" class="input"
+        placeholder="Search..." style="margin:0em auto 1em auto; display:block;
+        padding:4px; border-radius:4px; border:1px solid silver;"></input> -->
+        <input type="text" id="search_box" value="" class="input" placeholder="Search..."></input>
+    </div>
+    <div id="tree" align="left" />
 
 </div>
 
@@ -132,7 +138,10 @@ function fill_song_popover_wait(folderid) {
 
 $(document).ready( function() {
     $('#tree').jstree({
-        'plugins': ["wholerow", "state", "checkbox", "types", "conditionalselect", "dnd", "contextmenu"],
+        'plugins': [
+            "wholerow", "state", "checkbox", "types",
+            "conditionalselect", "dnd", "contextmenu", "search"
+        ],
         'conditionalselect': function (node, event) {
             return node.original.selectable;
         },
@@ -212,6 +221,18 @@ $(document).ready( function() {
             'large_drop_target': true,
             'drag_selection': false
         },
+        'search': {
+            'ajax': function(str, cb, node_id) {
+                get_data = {
+                    "str": str,
+                    "context": node_id
+                }
+                $.get(Urls['jukebox:search_folder'](), get_data, function(data){
+                    // alert("Search result: " + data);
+                    cb(data.matching_ids);
+                });
+            }
+        },
         'core' : {
             'check_callback': true,
             'multiple': true,
@@ -280,6 +301,17 @@ $(document).ready( function() {
                 data.instance.refresh();
             });
     })
+
+    var search_timeout = false;
+    $("#search_box").keyup(function() {
+        if (search_timeout) {
+            clearTimeout(search_timeout);
+        }
+        search_timeout = setTimeout(function() {
+            var v = $("#search_box").val();
+            $("#tree").jstree(true).search(v);
+        }, 250);
+    });
 
 });
 </script>
