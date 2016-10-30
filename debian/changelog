@@ -1,3 +1,15 @@
+hackradio (2.1-1) unstable; urgency=medium
+
+  * Upstream release v2.1:
+    Show virtual path instead of disk path
+    Add search function to select_folders
+    Add enqueue option to context menu in select_folders
+    Code quality improvements:
+        - Fix local JavaScript variables
+        - HTML-encode used-provided text when rendered, preventing XSS
+
+ -- Jan-Pascal van Best <janpascal@vanbest.org>  Sun, 30 Oct 2016 23:15:01 +0100
+
 hackradio (2.0-1) unstable; urgency=medium
 
   * Upstream release 2.0.
