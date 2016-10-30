@@ -1,3 +1,6 @@
 - Add a proper README
 - Fix javascript event handlers for dynamic HTML
 - Use POST instead of GET for ajax calls that change state
+- "Play now" button for songs in song list in queue and select_folders pages
+- "play next" context menu item in tree view, maybe also in queue view
+- Add some feedback when uploading zip file

@@ -37,7 +37,7 @@
   </td>
   <td>
     {{if skipped}}<s>{{/if}}
-    {{:filename}}
+    {{>filename}}
     {{if skipped}}</s>{{/if}}
   </td>
 </tr>
@@ -54,7 +54,7 @@ function skip_current_folder_click(event) {
 }
 
 function skip_click(event) {
-    songid = $(this).parent().attr('data-songid');
+    var songid = $(this).parent().attr('data-songid');
     $.get(Urls['jukebox:skip_song'](songid), function(data){
         force_update = true;
         update_now_playing();
@@ -62,7 +62,7 @@ function skip_click(event) {
 }
 
 function enable_click(event) {
-    songid = $(this).parent().attr('data-songid');
+    var songid = $(this).parent().attr('data-songid');
     $.get(Urls['jukebox:reenable_song'](songid), function(data){
         force_update = true;
         update_now_playing();
@@ -71,28 +71,28 @@ function enable_click(event) {
 
 function update_now_playing() {
   $.get("{% url 'jukebox:now_playing' %}", function(data){
-        if (data.current_folder == null) {
+        if (data.current_folder_id == null) {
             return;
         }
-        new_folder_id = data.current_folder.id
+        var new_folder_id = data.current_folder_id
         if (force_update || new_folder_id != current_folder_id) {
             force_update = false;
 
-            table = $("table#now_playing");
+            var table = $("table#now_playing");
 
-            html = $("#row-template").render(data.now_playing);
+            var html = $("#row-template").render(data.now_playing);
             table.find("tbody").html(html);
 
             $("td.skip").click(skip_click);
             $("td.enable").click(enable_click);
-            $("#now_playing_title").html(data.current_folder.disk_path);
+            $("#now_playing_title").text(data.current_folder_path);
 
             current_folder_id = new_folder_id;
         }
-        new_song_id = data.current_song.id
+        var new_song_id = data.current_song.id
         if (new_song_id != current_song_id) {
-            $("tr[data-songid="+current_song_id+"]").removeClass("current_song");
-            $("tr[data-songid="+new_song_id+"]").addClass("current_song");
+            $("tr.now_playing").removeAttr("id");
+            $("tr.now_playing[data-songid="+new_song_id+"]").attr("id", "current_song");
             current_song_id = new_song_id;
             //alert("New song: " + data.current_song.filename + "; new song id: " + new_song_id);
         }

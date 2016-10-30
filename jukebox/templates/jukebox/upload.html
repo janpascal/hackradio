@@ -44,34 +44,4 @@
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
-<script type="text/javascript">
-
-function update_import_modal() {
-    $.get(Urls['jukebox:import_status'](), function(data){
-        $("#modal_import_dir").text(data.current_import_dir);
-    });
-}
-
-function import_clicked(event) {
-    root_dir = $(this).parent().find("input#rootdir").val()
-    csrf_token = $(this).parent().find("input[name=csrfmiddlewaretoken]").attr("value")
-    post_data = {
-        "root_dir": root_dir,
-        "csrfmiddlewaretoken": csrf_token
-    }
-
-    $('#import_modal').modal('show');
-    update_modal_interval = setInterval(update_import_modal, 200);
-    $.post(Urls['jukebox:import_collection'](), post_data, function(data){
-        $('#import_modal').modal('hide')
-        clearInterval(update_modal_interval);
-    });
-
-    return false;
-}
-
-$(document).ready( function() {
-    $("button#importbutton").click(import_clicked);
-});
-</script>
 {% endblock %}   

@@ -22,6 +22,7 @@ urlpatterns = [
     url(r'^json/convert_status$', views.convert_status, name='convert_status'),
     url(r'^json/import_status$', views.import_status, name='import_status'),
     url(r'^folder/(?P<folder_id>[0-9]*)/songs$', views.folder_songs, name='folder_songs'),
+    url(r'^folder/search$', views.search_folder, name='search_folder'),
     url(r'^subdirs/(?P<folder_id>[0-9]*)$', views.folder_subdirs, name="folder_subdirs"),
 
     # Actions
