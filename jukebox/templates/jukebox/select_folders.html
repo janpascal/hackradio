@@ -70,7 +70,7 @@
         <div class="panel-heading">Now converting</div>
         <div class="panel-body">
             {{for running}}
-                <p>{{:filename}}</p>
+                <p>{{>filename}}</p>
             {{/for}}
         </div>
     </div>
@@ -78,31 +78,40 @@
         <div class="panel-heading">Queued</div>
         <div class="panel-body">
             {{for queued}}
-                <p>{{:filename}}</p>
+                <p>{{>filename}}</p>
             {{/for}}
         </div>
     </div>
 </script>
 
 <script id="folder-text-template" type="text/x-jsrender">
-{{:name}} 
+{{>name}} 
 {{if selectable}}
 <small class="label label-info songs_button" data-folderid="{{:id}}" 
       data-container="body"
       data-toggle="popover" data-trigger="hover" 
-      title="Songs in {{:name}}" data-html="true" 
+      title="Songs in {{>escaped_name}}" data-html="true" 
       data-content="To be Filled In">Songs</small>
 {{/if}}
 </script>
 
 <script id="popover-template" type="text/x-jsrender">
     {{for songs}}
-       {{:filename}}<br />
+       {{>filename}}<br />
     {{/for}}
 </script>
 {% endverbatim %}
 
 <script type="text/javascript">
+
+function htmlEscape(str) {
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
 
 function update_convert_queue() {
     $.get(Urls['jukebox:convert_status'](), function(data){
@@ -161,6 +170,7 @@ $(document).ready( function() {
                                     function(node,status,cancelled) {
                                         var item = $node.original;
                                         item.name = node.text;
+                                        item.escaped_name = htmlEscape(item.name);
                                         var new_text = $("#folder-text-template").render(item);
                                         tree.rename_node(node, new_text);
                                         fill_song_popover_wait(item.id);
@@ -256,7 +266,7 @@ $(document).ready( function() {
                         var roots = [];
                         $.each(data.roots, function(i, root) {
                             roots.push({
-                                "text": root.name, 
+                                "text": htmlEscape(root.name), 
                                 "name": root.name, 
                                 "id": root.id,
                                 "children": true, 
@@ -269,6 +279,7 @@ $(document).ready( function() {
                     $.get(Urls['jukebox:folder_subdirs'](node.id), function(data){
                         var children = [];
                         $.each(data.children, function(i, item) {
+                            item.escaped_name = htmlEscape(item.name);
                             children.push({
                                 "text": $("#folder-text-template").render(item),
                                 "name": item.name,

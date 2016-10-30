@@ -32,11 +32,11 @@
 {{else}}
     <td class="remove"><a href="#"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></td>
 {{/if}}
-<td>{{:name}} ({{:path}})
+<td>{{>name}} ({{>path}})
   <small class="label label-info songs_button" 
         data-container="body"
         data-folderid="{{:id}}" data-toggle="popover" data-trigger="hover"         
-        title="Songs in {{:name}}" data-html="true" data-content="To be Filled In">
+        title="Songs in {{>escaped_name}}" data-html="true" data-content="To be Filled In">
         Songs
   </small>
 </td>
@@ -45,12 +45,21 @@
 
 <script id="popover-template" type="text/x-jsrender">
     {{for songs}}
-       {{:filename}}<br />
+       {{>filename}}<br />
     {{/for}}
 </script>
 {% endverbatim %}
 
 <script type="text/javascript">
+
+function htmlEscape(str) {
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
 
 function deselect_folder(event) {
     var folderid = $(this).parent().attr('data-folderid');
@@ -74,6 +83,7 @@ function update_queue() {
             //alert("Queue changed");
             var table = $("table#queue");
 
+            data.current.escaped_name = htmlEscape(data.current.name);
             var now_playing_row = $("#row-template").render(data.current, 
                 {"now_playing": true, "first": false, "last": false});
             table.find("#current_folder").replaceWith(now_playing_row);
@@ -83,6 +93,7 @@ function update_queue() {
             $.each(data.queue, function(i,folder) {
                 var first = (i == 0);
                 var last = (i == data.queue.length - 1);
+                folder.escaped_name = htmlEscape(folder.name);
                 var row = $("#row-template").render(folder, {"now_playing": false,
                 "first": first, "last": last});
                 html += row;
