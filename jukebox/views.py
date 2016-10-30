@@ -81,7 +81,8 @@ def now_playing(request):
     now_playing,current_folder,current_song = queue_player.now_playing()
     context = {
         "now_playing": [model_to_dict(s) for s in now_playing],
-        "current_folder": model_to_dict(current_folder) if current_folder is not None else None,
+        "current_folder_id": current_folder.id if current_folder is not None else None,
+        "current_folder_path": current_folder.tree_path() if current_folder is not None else None,
         "current_song": model_to_dict(current_song) if current_song is not None else None
     }
     #logger.info(u"now_playing context: {}".format(context))
@@ -96,9 +97,23 @@ def json_queue(request):
     except ObjectDoesNotExist:
         current_folder = None
     queue_hash = hashlib.md5("".join([f.disk_path.encode('ascii','ignore') for f in queue])).hexdigest()
+
+    if current_folder is None:
+        dict_current = None
+    else:
+        dict_current = model_to_dict(current_folder)
+        dict_current["path"] = current_folder.tree_path()
+
+    def flatten(f):
+        dict_f = model_to_dict(f)
+        dict_f["path"] = f.tree_path()
+        return dict_f
+    dict_queue = [ flatten(f) for f in queue ]
+
+        # model_to_dict(f) for f in queue
     context = {
-        "current": None if current_folder is None else model_to_dict(current_folder),
-        "queue": [model_to_dict(f) for f in queue],
+        "current": dict_current,
+        "queue": dict_queue, #[model_to_dict(f) for f in queue],
         "hash": queue_hash
     }
     #logger.info(u"json_queue context: {}".format(context))

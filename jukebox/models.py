@@ -29,6 +29,25 @@ class Folder(models.Model):
     def __str__(self):
         return self.disk_path
 
+    def parents(self):
+        """ returns a list of the parents of this folder, up to the root,
+        including this folder itself """
+        if self.parent is None:
+            return [self]
+        return self.parent.parents() + [self]
+
+    def parent_ids(self):
+        """ returns a list of the ids of the parents of this folder, up to the root """
+        return [ p.id for p in self.parents() ]
+
+    def tree_path(self):
+        """ returns a list of the ids of the parents of this folder, up to the root """
+        return reduce(
+            lambda path,folder: path + "/" + folder.name,
+            self.parents(),
+            ""
+        )
+
     def swap(self, target):
         target_order = target.order
         target.order = self.order
