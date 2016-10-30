@@ -192,6 +192,20 @@ $(document).ready( function() {
                                 $.post(Urls['jukebox:delete_folder']($node.id), post_data);
                             });
                         }
+                    },
+                    "enqueue": {
+                        "label": "Enqueue",
+                        "title": "Enqueue this folder at the end of the queue",
+                        "action": function(obj) {
+                            tree.select_node($node);
+                            $.get(Urls['jukebox:select_folder']($node.id), function(data){
+                                if (data.converting) {
+                                    $('#convert_modal').modal('show')
+                                    update_convert_queue();
+                                    convert_queue_interval = setInterval(update_convert_queue, 1000);
+                                }
+                            });
+                        }
                     }
                 };
             }
