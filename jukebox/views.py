@@ -65,6 +65,7 @@ def upload_page(request):
         else:
             logger.warning("Form not valid...")
             logger.info("File data: {}".format(request.FILES))
+            logger.info("Form data: {}".format(request.POST))
     else:
         form = UploadArchiveForm()
 
@@ -183,6 +184,26 @@ def import_status(request):
         "current_import_dir": util.current_import_dir(),
     }
     #logger.info("Returning import status: {}".format(result))
+    return JsonResponse(result);
+
+def upload_status(request):
+    status = util.upload_status()
+    current_import_dir = ''
+    if status == util.UPLOAD_STATUS_NONE:
+        status = "Uploading"
+    elif status == util.UPLOAD_STATUS_UNPACKING:
+        status = "Unpacking zip file"
+    elif status == util.UPLOAD_STATUS_IMPORTING:
+        status = "Importing music from zip file"
+        current_import_dir = util.current_import_dir()
+    else:
+        status = "Unknown"
+
+    result = {
+        "phase": status,
+        "current_import_dir": current_import_dir,
+    }
+    #logger.info("Returning upload status: {}".format(result))
     return JsonResponse(result);
 
 def folder_songs(request, folder_id):

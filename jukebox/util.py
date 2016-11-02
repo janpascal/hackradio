@@ -16,21 +16,31 @@ from .models import Folder, Song
 
 logger = logging.getLogger(__name__)
 
+UPLOAD_STATUS_NONE = 0
+UPLOAD_STATUS_UNPACKING = 1
+UPLOAD_STATUS_IMPORTING = 2
+
 _current_dir = ""
+_upload_status = UPLOAD_STATUS_NONE
 
 def current_import_dir():
     global _current_dir
     return _current_dir
 
+def upload_status():
+    global _upload_status
+    return _upload_status
+
 def import_collection(root_dir):
-    recurse_import_dir(root_dir, None)
+    recurse_import_dir(root_dir, None, display_dir="")
+    _current_dir = ''
 
 # returns True if any song were including in this subtree
-def recurse_import_dir(root_path, parent):
+def recurse_import_dir(root_path, parent, display_dir):
     global _current_dir
 
     logger.info(u"Importing recursively from dir {}".format(root_path))
-    _current_dir = root_path
+    _current_dir = display_dir
 
     found_something = False
     folder,folder_is_new = Folder.objects.get_or_create(disk_path=root_path, name=os.path.basename(root_path))
@@ -43,7 +53,7 @@ def recurse_import_dir(root_path, parent):
         disk_path = os.path.join(root_path, f)
         if os.path.isdir(disk_path):
             logger.debug(u"Directory {}, recursing".format(disk_path))
-            found_in_subtree = recurse_import_dir(disk_path, folder)
+            found_in_subtree = recurse_import_dir(disk_path, folder, display_dir + "/" + f)
             found_something = found_something or found_in_subtree
         _,extension = os.path.splitext(f)
         if os.path.isfile(disk_path) and extension in [".mp3", ".flac", ".ogg", ".mpc", ".m4a"]:
@@ -65,6 +75,8 @@ def recurse_import_dir(root_path, parent):
     return found_something
 
 def import_ziparchive(name, f):
+    global _upload_status
+
     if not isinstance(f, TemporaryUploadedFile):
         logger.error("Uploaded file should be a TemporaryUploadedFile")
         return
@@ -83,7 +95,9 @@ def import_ziparchive(name, f):
         pass
 
     with zipfile.ZipFile(f.temporary_file_path(), 'r') as myzip:
+        _upload_status = UPLOAD_STATUS_UNPACKING
         myzip.extractall(archive_dir)
+        _upload_status = UPLOAD_STATUS_IMPORTING
         import_collection(archive_dir)
 
-
+    _upload_status = UPLOAD_STATUS_NONE

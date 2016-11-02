@@ -19,14 +19,14 @@
         <div class="form-group">
         {{ form.as_p }}
         </div>
-        <input type="submit" class="btn btn-primary" value="Upload"></input>
+        <input id="uploadbutton" type="submit" class="btn btn-primary" value="Upload"></input>
     </form>
 
 </div>
 
 <!-- Modal dialogs -->
 
-<div id="import_modal" class="modal" tabindex="-1" role="dialog">
+<div id="upload_modal" class="modal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -34,6 +34,7 @@
         <h4 class="modal-title">Importing music...</h4>
       </div>
       <div class="modal-body">
+        <p>Current status: <span id="upload_status"><!--AJAX--></span></p>
         <p>Importing music from <span id="modal_import_dir"><!--AJAX--></span>&hellip;
         </p>
       </div>
@@ -44,4 +45,31 @@
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
+<script type="text/javascript">
+
+function update_upload_modal() {
+    $.get(Urls['jukebox:upload_status'](), function(data){
+        $("#upload_status").text(data.phase);
+        $("#modal_import_dir").text(data.current_import_dir);
+    });
+}
+
+function upload_clicked(event) {
+    var formData = new FormData($('form')[0]);
+
+    $('#upload_modal').modal('show');
+    update_modal_interval = setInterval(update_upload_modal, 200);
+    $.post(Urls['jukebox:upload'](), formData, function(data){
+        $('#upload_modal').modal('hide')
+        clearInterval(update_modal_interval);
+    });
+
+    return false;
+}
+
+$(document).ready( function() {
+    $("input#uploadbutton").click(upload_clicked);
+});
+
+</script>
 {% endblock %}   
