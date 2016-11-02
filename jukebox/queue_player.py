@@ -53,7 +53,7 @@ def _play_thread():
             song.now_playing = True
             song.save()
 
-            player.play(song.mp3_path())
+            player.play(song.mp3_path(), song.tree_path())
             while not player.stopped_event.wait(0.1):
                 del song.skipped
                 if song.skipped or skip_rest_of_current_folder or stop_playing:
