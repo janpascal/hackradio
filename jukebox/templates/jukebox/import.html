@@ -72,18 +72,6 @@ function import_clicked(event) {
     return false;
 }
 
-function fill_song_popover(folderid) {
-    $.get(Urls['jukebox:folder_songs'](folderid), function(data){
-        var content = ""
-        $.each(data.songs, function(i, song) {
-            content += "<p>" + song.filename + "</p>";
-        });
-        var button = $(".songs_button[data-folderid='" + folderid + "']");
-
-        button.attr('data-content', content);
-    });
-}
-
 $(document).ready( function() {
     $("button#importbutton").click(import_clicked);
 });
