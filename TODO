@@ -4,3 +4,10 @@
 - "Play now" button for songs in song list in queue and select_folders pages
 - "play next" context menu item in tree view, maybe also in queue view
 - Add some feedback when uploading zip file
+- Make it easier to move just-imported folders in place:
+  - dnd in multiple windows (from one to another)?
+  - context menu move-to, which opens the tree
+- Set the name used when streaming to icecast to the logical instead of the
+  physical location of the mp3 file
+- Think about what 'selection' in the tree view is supposed to mean
+
