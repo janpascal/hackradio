@@ -1,5 +1,10 @@
 Changelog for hackradio
 
+v2.2 (2016-11-02)
+    Show status modal dialog when uploading and processing zip file
+    When searching, show only matching folders
+    Use virtual path as filename in icecast stream
+
 v2.1 (2016-10-26)
     Show virtual path instead of disk path
     Add search function to select_folders
@@ -20,4 +25,3 @@ v1.3 (2016-10-24)
     Make queue sortable using drag-and-drop
     Highlight current song on index page
     Add current folder to queue view; remove up/down buttons for bottom/top folders
-

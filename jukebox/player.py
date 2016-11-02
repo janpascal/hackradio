@@ -61,14 +61,14 @@ class IcecastPlayer:
                 self.logger.warning(e)
                 self.connected = False
 
-    def _play_thread(self, filename):
+    def _play_thread(self, filename, display_name):
         total = 0
         st = time.time()
         self.logger.info("Playing {} to icecast server {}:{}".format(filename, self.shout.host, self.shout.port))
         try:
             f = open(filename)
 
-            self.shout.set_metadata({b'song': filename.encode('ascii', 'ignore')})
+            self.shout.set_metadata({b'song': display_name.encode('utf-8', 'ignore')})
 
             nbuf = f.read(4096)
             while not self.should_stop:
@@ -101,18 +101,18 @@ class IcecastPlayer:
             self.playing = False
         self.logger.info("Finished player._play_thread()")
 
-    def _fake_play_thread(self, filename):
+    def _fake_play_thread(self, filename, display_name):
         time.sleep(30)
         self.stopped_event.set()
 
-    def play(self, filename):
+    def play(self, filename, display_name):
         if self.is_playing():
             raise "Cannot start new stream, already playing"
         if self._thread is not None:
             raise "Cannot start new stream, play thread already exists"
 
         #self._thread = threading.Thread(target=self._fake_play_thread, args=(filename,))
-        self._thread = threading.Thread(target=self._play_thread, args=(filename,))
+        self._thread = threading.Thread(target=self._play_thread, args=(filename, display_name))
         self.playing = True
         self.should_stop = False
         self.stopped_event.clear()

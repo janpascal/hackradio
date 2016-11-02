@@ -41,7 +41,9 @@ class Folder(models.Model):
         return [ p.id for p in self.parents() ]
 
     def tree_path(self):
-        """ returns a list of the ids of the parents of this folder, up to the root """
+        """ returns a string representing the path from the root to and including
+            this folder
+        """
         return reduce(
             lambda path,folder: path + "/" + folder.name,
             self.parents(),
@@ -124,6 +126,9 @@ class Song(models.Model):
             return self.converted_path
         else:
             return os.path.join(self.folder.disk_path, self.filename)
+
+    def tree_path(self):
+        return self.folder.tree_path() + '/' + self.filename
 
     def conversion_done(self):
         return bool(self.converted_path)
