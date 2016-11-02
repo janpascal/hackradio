@@ -1,3 +1,12 @@
+hackradio (2.2-1) unstable; urgency=medium
+
+  * Upstream release 2.2:
+    Show status modal dialog when uploading and processing zip file
+    When searching, show only matching folders
+    Use virtual path as filename in icecast stream
+
+ -- Jan-Pascal van Best <janpascal@vanbest.org>  Wed, 02 Nov 2016 22:57:10 +0100
+
 hackradio (2.1-1) unstable; urgency=medium
 
   * Upstream release v2.1:
