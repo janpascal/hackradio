@@ -34,7 +34,7 @@ def _play_thread():
     while not stop_playing:
         current_folder = None
         wait_for_folder_count = 0
-        while current_folder is None:
+        while current_folder is None and not stop_playing:
             current_folder = Folder.objects.filter(selected=True).order_by('order').first()
             if current_folder is None:
                 if wait_for_folder_count % 300 == 0:
@@ -49,6 +49,10 @@ def _play_thread():
             else:
                 # Force reconnect, probably disconnected silently
                 player.reconnect()
+
+        if stop_playing or skip_rest_of_current_folder:
+            player_thread = None
+            return
 
         logger.info(u"Current folder: {}".format(current_folder))
         current_folder.now_playing = True
