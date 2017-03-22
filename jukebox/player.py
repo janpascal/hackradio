@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+# vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
 from __future__ import unicode_literals
 
@@ -24,7 +24,8 @@ class IcecastPlayer:
         self.stopped_event = threading.Event()
         self._thread = None
         self.logger = logging.getLogger(__name__)
-
+        self.quiet = False
+    
         self.shout = shout.Shout()
         self.shout.host = settings.JUKEBOX_SHOUT_HOST
         self.shout.port = settings.JUKEBOX_SHOUT_PORT
@@ -42,9 +43,10 @@ class IcecastPlayer:
 
         self.shout.format = b"mp3"
 
-    def connect(self):
-        if not self.connected or not self.shout.get_connected():
-            self.logger.info("Trying to connect to server at {}:{}".format(self.shout.host, self.shout.port))
+    def connect(self, force=False):
+        if force or not self.connected or self.shout.get_connected() != shout.SHOUTERR_CONNECTED:
+            if not self.quiet:
+                self.logger.info("Trying to connect to server at {}:{}".format(self.shout.host, self.shout.port))
             try:
                 self.shout.open()
                 self.connected = True
@@ -54,17 +56,22 @@ class IcecastPlayer:
         return True
 
     def disconnect(self):
-        if self.connected and self.shout.get_connected():
+        if self.connected and self.shout.get_connected() == shout.SHOUTERR_CONNECTED:
             try:
                 self.shout.close()
             except Exception as e:
                 self.logger.warning(e)
-                self.connected = False
+        self.connected = False
+
+    def reconnect(self):
+        self.disconnect()
+        self.connect(True)
 
     def _play_thread(self, filename, display_name):
         total = 0
         st = time.time()
-        self.logger.info("Playing {} to icecast server {}:{}".format(filename, self.shout.host, self.shout.port))
+        if not self.quiet:
+            self.logger.info("Playing {} to icecast server {}:{}".format(filename, self.shout.host, self.shout.port))
         try:
             f = open(filename)
 
@@ -83,29 +90,35 @@ class IcecastPlayer:
             if self.should_stop:
                 delay = self.shout.delay()
                 if delay > 0:
-                    self.logger.info("Delaying for {} milleseconds before starting next stream".format(delay))
+                    if not self.quiet:
+                        self.logger.info("Delaying for {} milleseconds before starting next stream".format(delay))
                     time.sleep(delay / 1000.0)
 
             f.close()
             
-            et = time.time()
-            br = total*0.008/(et-st)
-            self.logger.info("Sent {} bytes in {} seconds ({} kbps)".format(total, et-st, br))
+            if not self.quiet:
+                et = time.time()
+                br = total*0.008/(et-st)
+                self.logger.info("Sent {} bytes in {} seconds ({} kbps)".format(total, et-st, br))
         except ShoutException as e:
-            self.logger.warning("Exception during play, sleeping for one second")
             self.logger.warning(e)
+            self.logger.warning("Exception during play (see above), sleeping for one second")
+            self.logger.warning("shout.get_connected(): {}".format(self.shout.get_connected()))
             time.sleep(1.0)
+            self.reconnect()
         finally:
             self._thread = None
             self.stopped_event.set()
             self.playing = False
-        self.logger.info("Finished player._play_thread()")
+
+        if not self.quiet:
+            self.logger.info("Finished player._play_thread()")
 
     def _fake_play_thread(self, filename, display_name):
         time.sleep(30)
         self.stopped_event.set()
 
-    def play(self, filename, display_name):
+    def play(self, filename, display_name, quiet=False):
         if self.is_playing():
             raise "Cannot start new stream, already playing"
         if self._thread is not None:
@@ -116,6 +129,7 @@ class IcecastPlayer:
         self.playing = True
         self.should_stop = False
         self.stopped_event.clear()
+        self.quiet = quiet
         self._thread.start()
 
     def is_playing(self):
