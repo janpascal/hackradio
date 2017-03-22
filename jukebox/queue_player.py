@@ -13,11 +13,17 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 
 from models import Folder, Song
-#from player import IcecastPlayer
+from icecast_player import IcecastPlayer
 from vlc_player import VLCPlayer
 
-#player = IcecastPlayer()
-player = VLCPlayer()
+if settings.JUKEBOX_OUTPUT_MODULE == 'LIBVLC':
+    player = VLCPlayer()
+elif settings.JUKEBOX_OUTPUT_MODULE == 'SHOUT':
+    player = IcecastPlayer()
+else:
+    player = VLCPlayer()
+
+#player = globals()[settings.OUTPUT_CLASS]()
 
 player_thread = None
 logger = logging.getLogger(__name__)
@@ -40,17 +46,9 @@ def _play_thread():
                 if wait_for_folder_count % 300 == 0:
                     logger.info("No albums queued, waiting...")
                 wait_for_folder_count += 1
-                player.connect()
-                player.play(os.path.join(settings.MEDIA_ROOT, "silence_1s.mp3"), "Nothing here at the moment", quiet=True)
-                while not player.stopped_event.wait(0.1):
-                    if skip_rest_of_current_folder or stop_playing:
-                        player.stop()
-                        break
-            else:
-                # Force reconnect, probably disconnected silently
-                player.reconnect()
+                time.sleep(1)
 
-        if stop_playing or skip_rest_of_current_folder:
+        if stop_playing:
             player_thread = None
             return
 
@@ -59,7 +57,6 @@ def _play_thread():
         current_folder.save()
 
         for song in current_folder.songs.all():
-            player.connect()
             del song.skipped
             if song.skipped:
                 logger.info(u"Skipping {}".format(song.filename))
@@ -76,7 +73,7 @@ def _play_thread():
             song.save()
 
             player.play(song.mp3_path(), song.tree_path())
-            while not player.stopped_event.wait(0.1):
+            while not player.wait_for_end(0.1):
                 del song.skipped
                 if song.skipped or skip_rest_of_current_folder or stop_playing:
                     player.stop()

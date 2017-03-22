@@ -105,9 +105,11 @@ JUKEBOX_CACHE_DIR = config.get('jukebox', 'JUKEBOX_CACHE_DIR')
 JUKEBOX_UPLOAD_DIR = config.get('jukebox', 'JUKEBOX_UPLOAD_DIR')
 
 JUKEBOX_STREAM_URL = config.get('jukebox', 'JUKEBOX_STREAM_URL')
-JUKEBOX_CONVERT_CONCURRENCY = config.getint('jukebox', 'JUKEBOX_CONVERT_CONCURRENCY');
+JUKEBOX_CONVERT_CONCURRENCY = config.getint('jukebox', 'JUKEBOX_CONVERT_CONCURRENCY')
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "files")
+
+JUKEBOX_OUTPUT_MODULE = config.get('jukebox', 'JUKEBOX_OUTPUT_MODULE')
 
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases

@@ -14,3 +14,6 @@ JUKEBOX_UPLOAD_DIR = /var/music/uploaded
 
 JUKEBOX_STREAM_URL = http://www.example.com:8000/hackradio.mp3
 JUKEBOX_CONVERT_CONCURRENCY = 4
+
+# Choose SHOUT or LIBVLC
+JUKEBOX_OUTPUT_MODULE = SHOUT

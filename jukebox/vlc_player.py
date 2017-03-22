@@ -54,7 +54,14 @@ class VLCPlayer:
         self.logger.info("VLC playing: {}".format(self.player.is_playing()))
         return self.player.is_playing()
 
+    def wait_for_end(self, timeout):
+        return self.stopped_event.wait(timeout)
+
     def stop(self):
         self.logger.info("Stopping vlc")
         self.player.stop()
+        stopped = self.wait_for_end(30.0)
+        if not stopped:
+            self.logger.error("Did NOT receive message that thread actually stopped, will cause trouble later!")
+        
         #self.stopped_event.set()
