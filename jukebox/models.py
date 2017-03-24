@@ -6,6 +6,10 @@ from django.conf import settings
 from django.db import models, transaction
 from django.db.models import Min, Max
 
+class Collection(models.Model):
+    name = models.CharField("name", max_length=255, db_index=True)
+    disk_path = models.CharField("disk_path", max_length=4096)
+
 class FolderManager(models.Manager):
 
     def set_queue(self, queue):
@@ -17,7 +21,8 @@ class FolderManager(models.Manager):
 
 class Folder(models.Model):
     name = models.CharField("name", max_length=255)
-    disk_path = models.CharField("disk_path", max_length=4096)
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, related_name="folders", db_index=True)
+    disk_path = models.CharField("disk_path", max_length=4096, db_index=True)
     parent = models.ForeignKey('self', null=True, related_name="children")
     selectable = models.BooleanField("selectable", default=False)
     selected = models.BooleanField("selected", default=False)
@@ -107,6 +112,7 @@ class Folder(models.Model):
         unique_together = ("parent", "name")
         index_together = [
             ["selected", "order"],
+            ["collection", "disk_path"]
         ]
 
 

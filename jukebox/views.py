@@ -10,13 +10,14 @@ import os.path
 from django.conf import settings
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Count
 from django.forms.models import model_to_dict
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
 
-from models import Folder, Song
+from models import Collection, Folder, Song
 import queue_player
 import util
 import converter
@@ -47,12 +48,13 @@ def select_folders(request):
     }
     return render(request, "jukebox/select_folders.html", context)
 
-def import_page(request):
+def collections_page(request):
     context = {
-        "page_id": "import",
-        "stream_url": settings.JUKEBOX_STREAM_URL
+        "page_id": "collections",
+        "stream_url": settings.JUKEBOX_STREAM_URL,
+        "collections": Collection.objects.all().annotate(Count('folders'))
     }
-    return render(request, "jukebox/import.html", context)
+    return render(request, "jukebox/collections.html", context)
 
 def upload_page(request):
     if request.method == 'POST':
@@ -345,6 +347,24 @@ def set_queue(request):
 def import_collection(request):
     root_dir = request.POST['root_dir']
     logger.info("Importing collection from {}".format(root_dir))
-    util.import_collection(root_dir)
+    try:
+        util.import_collection(root_dir)
+    except:
+        logger.exception("Error importing collection from \"{}\"".format(root_dir))
+    return HttpResponse("OK")
+
+def refresh_collection(request, collection_id):
+    collection = Collection.objects.get(pk=collection_id)
+    logger.info("Refreshing collection {}".format(collection.name))
+    try:
+        util.refresh_collection(collection)
+    except:
+        logger.exception("Error in refreshing collection {}".format(collection.name))
+    return HttpResponse("OK")
+
+def delete_collection(request, collection_id):
+    collection = Collection.objects.get(pk=collection_id)
+    logger.info("Deleting collection {}".format(collection.name))
+    collection.delete()
     return HttpResponse("OK")
 

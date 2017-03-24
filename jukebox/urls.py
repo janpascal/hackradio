@@ -12,7 +12,7 @@ urlpatterns = [
     url(r'^index.html$', views.index, name='index'),
     url(r'^queue.html$', views.queue, name='queue'),
     url(r'^select_folders.html$', views.select_folders, name='select_folders'),
-    url(r'^import.html$', views.import_page, name='import'),
+    url(r'^collections.html$', views.collections_page, name='collections'),
     url(r'^upload.html$', views.upload_page, name='upload'),
 
     # Data requests
@@ -28,6 +28,8 @@ urlpatterns = [
 
     # Actions
     url(r'^import_collection$', views.import_collection, name='import_collection'),
+    url(r'^collection/(?P<collection_id>[0-9]+)/refresh$', views.refresh_collection, name='refresh_collection'),
+    url(r'^collection/(?P<collection_id>[0-9]+)/delete$', views.delete_collection, name='delete_collection'),
     url(r'^queue/set$', views.set_queue, name='set_queue'),
     url(r'^song/(?P<song_id>[0-9]+)/skip$', views.skip_song, name="skip_song"),
     url(r'^song/(?P<song_id>[0-9]+)/reenable$', views.reenable_song, name="reenable_song"),

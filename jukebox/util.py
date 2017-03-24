@@ -12,7 +12,7 @@ import zipfile
 from django.conf import settings
 from django.core.files.uploadedfile import TemporaryUploadedFile
 
-from .models import Folder, Song
+from .models import Collection, Folder, Song
 
 logger = logging.getLogger(__name__)
 
@@ -31,20 +31,35 @@ def upload_status():
     global _upload_status
     return _upload_status
 
-def import_collection(root_dir):
-    recurse_import_dir(root_dir, None, display_dir="")
+def import_collection(root_dir, name = None):
+    if name is None:
+        name = os.path.basename(root_dir)
+    collection,collection_is_new = Collection.objects.get_or_create(name=name, disk_path=root_dir)
+    collection.save()
+    folder_ids = []
+    recurse_import_dir(collection, root_dir, None, display_dir="", folder_ids=folder_ids)
+
+    obsolete_folders = Folder.objects.filter(collection=collection).exclude(id__in = folder_ids)
+    logger.info("Obsolete folders: {}".format(list(obsolete_folders.values())))
+    obsolete_folders.delete()
     _current_dir = ''
 
+    return True
+
+def refresh_collection(collection):
+    return import_collection(collection.disk_path, collection.name)
+
 # returns True if any song were including in this subtree
-def recurse_import_dir(root_path, parent, display_dir):
+def recurse_import_dir(collection, root_path, parent, display_dir, folder_ids):
     global _current_dir
 
     logger.info(u"Importing recursively from dir {}".format(root_path))
     _current_dir = display_dir
 
     found_something = False
-    folder,folder_is_new = Folder.objects.get_or_create(disk_path=root_path, name=os.path.basename(root_path))
+    folder,folder_is_new = Folder.objects.get_or_create(collection=collection, disk_path=root_path)
     logger.debug("Folder is new: {}".format(folder_is_new))
+    folder.name = os.path.basename(root_path)
     folder.parent = parent
     folder.save()
     songs = []
@@ -53,7 +68,7 @@ def recurse_import_dir(root_path, parent, display_dir):
         disk_path = os.path.join(root_path, f)
         if os.path.isdir(disk_path):
             logger.debug(u"Directory {}, recursing".format(disk_path))
-            found_in_subtree = recurse_import_dir(disk_path, folder, display_dir + "/" + f)
+            found_in_subtree = recurse_import_dir(collection, disk_path, folder, display_dir + "/" + f, folder_ids)
             found_something = found_something or found_in_subtree
         _,extension = os.path.splitext(f)
         if os.path.isfile(disk_path) and extension in [".mp3", ".flac", ".ogg", ".mpc", ".m4a"]:
@@ -71,6 +86,7 @@ def recurse_import_dir(root_path, parent, display_dir):
         folder.delete()
     else:
         folder.save()
+        folder_ids.append(folder.id)
 
     return found_something
 
@@ -98,6 +114,6 @@ def import_ziparchive(name, f):
         _upload_status = UPLOAD_STATUS_UNPACKING
         myzip.extractall(archive_dir)
         _upload_status = UPLOAD_STATUS_IMPORTING
-        import_collection(archive_dir)
+        import_collection(archive_dir, name=name)
 
     _upload_status = UPLOAD_STATUS_NONE
