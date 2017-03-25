@@ -1,0 +1,160 @@
+{% extends "jukebox/base.html" %}
+<!-- vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4 
+-->
+
+{% block title %}Hack Radio{% endblock %}   
+
+{% block content %}
+
+<div>
+
+  <p>&nbsp;</p>
+
+<h3>Collections</h3>
+    <table id="collections" class="table table-striped">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Number of folders</th>
+            <th>Path</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for c in collections %}
+        <tr>
+          <td>{{ c.name }}</td>
+          <td>{{ c.folders__count }}</td>
+          <td>{{ c.disk_path }}</td>
+          <td><button type="button" class="btn btn-default refresh" data-id="{{ c.id }}">Refresh</button></td>
+          <td><button type="button" class="btn btn-danger delete" 
+            data-id="{{ c.id }}"
+            data-name="{{ c.name }}"
+            data-folder-count="{{ c.folders__count }}">Delete</button></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+        <p>Import a collection of mp3, flac, ogg, m4a or mpc audio files <em>on the
+          server</em></p>
+
+        <form action="#" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="rootdir">Collection root directory</label>
+                <input type="text" class="form-control" placeholder="Root directory on server" id="rootdir">
+            </div>
+            <button id="importbutton" class="btn btn-primary">Import</button>
+        </form>
+
+</div>
+
+<!-- Modal dialogs -->
+
+<div id="import_modal" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Importing music...</h4>
+      </div>
+      <div class="modal-body">
+        <p>Importing music from <span id="modal_import_dir"><!--AJAX--></span>&hellip;
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div id="confirm_modal" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Confirm</h4>
+      </div>
+      <div class="modal-body">
+          Are you sure you want to remove collection <span id="delete_name">
+              <!-- filled dynamically -->
+          </span> and all its <span id="delete_folder_count">
+              <!-- filled dynamically -->
+          </span> folders?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-dismiss="modal" id="delete">Delete</button>
+        <button type="button" class="btn" data-dismiss="modal">Cancel</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+<script type="text/javascript">
+
+function update_import_modal() {
+    $.get(Urls['jukebox:import_status'](), function(data){
+        $("#modal_import_dir").text(data.current_import_dir);
+    });
+}
+
+function import_clicked(event) {
+    var root_dir = $(this).parent().find("input#rootdir").val();
+    var csrf_token = $(this).parent().find("input[name=csrfmiddlewaretoken]").attr("value");
+    var post_data = {
+        "root_dir": root_dir,
+        "csrfmiddlewaretoken": csrf_token
+    };
+
+    $('#import_modal').modal('show');
+    update_modal_interval = setInterval(update_import_modal, 200);
+    $.post(Urls['jukebox:import_collection'](), post_data, function(data){
+        $('#import_modal').modal('hide')
+        clearInterval(update_modal_interval);
+        location.reload();
+    });
+
+    return false;
+}
+
+function refresh_clicked(event) {
+    var collection_id = $(this).attr("data-id");
+    $('#import_modal').modal('show');
+    update_modal_interval = setInterval(update_import_modal, 200);
+    $.get(Urls['jukebox:refresh_collection'](collection_id), function(data){
+        $('#import_modal').modal('hide')
+        clearInterval(update_modal_interval);
+        location.reload();
+    });
+
+    return false;
+}
+
+function delete_clicked(event) {
+    var collection_id = $(this).attr("data-id");
+    $('#delete_name').text($(this).attr("data-name"));
+    $('#delete_folder_count').text($(this).attr("data-folder-count"));
+    $('#confirm_modal').modal({
+        'backdrop': 'static',
+        'keyboard': false
+    }).one('click', '#delete', function() {
+        var post_data = {
+            "csrfmiddlewaretoken": '{{ csrf_token }}'
+        }
+        $.post(Urls['jukebox:delete_collection'](collection_id), post_data, function(data) {
+            location.reload();
+        });
+    });
+
+    return false;
+}
+
+$(document).ready( function() {
+    $("button#importbutton").click(import_clicked);
+    $("button.refresh").click(refresh_clicked);
+    $("button.delete").click(delete_clicked);
+});
+</script>
+{% endblock %}   

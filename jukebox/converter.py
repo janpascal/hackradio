@@ -83,7 +83,7 @@ def convert_done(future):
 def queue_convert_song(song):
     global _pool
     global _jobs
-    future =_pool.submit(convert_song, song)
+    future = _pool.submit(convert_song, song)
     _jobs[future] = song
     future.add_done_callback(convert_done)
 

@@ -1,5 +1,11 @@
 Changelog for hackradio
 
+v3.0 (2017-03-25)
+    Second output module: configure LIBVLC or SHOUT
+    Organise folders per collection
+    Delete collection (and all its folders)
+    Fix for icecast stream stopping when no song was playing
+
 v2.2 (2016-11-02)
     Show status modal dialog when uploading and processing zip file
     When searching, show only matching folders

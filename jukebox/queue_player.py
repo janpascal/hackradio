@@ -3,17 +3,28 @@
 from __future__ import unicode_literals
 
 import logging
+import os.path
 import sys
 import string
 import threading
 import time
 
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 
 from models import Folder, Song
-from player import IcecastPlayer
+from icecast_player import IcecastPlayer
+from vlc_player import VLCPlayer
 
-player = IcecastPlayer()
+if settings.JUKEBOX_OUTPUT_MODULE == 'LIBVLC':
+    player = VLCPlayer()
+elif settings.JUKEBOX_OUTPUT_MODULE == 'SHOUT':
+    player = IcecastPlayer()
+else:
+    player = VLCPlayer()
+
+#player = globals()[settings.OUTPUT_CLASS]()
+
 player_thread = None
 logger = logging.getLogger(__name__)
 
@@ -27,16 +38,24 @@ def _play_thread():
     global player_thread
 
     while not stop_playing:
-        current_folder = Folder.objects.filter(selected=True).order_by('order').first()
-        if current_folder is None:
-            logger.info("No albums queued, trying again later...")
-            time.sleep(30)
-            continue
+        current_folder = None
+        wait_for_folder_count = 0
+        while current_folder is None and not stop_playing:
+            current_folder = Folder.objects.filter(selected=True).order_by('order').first()
+            if current_folder is None:
+                if wait_for_folder_count % 300 == 0:
+                    logger.info("No albums queued, waiting...")
+                wait_for_folder_count += 1
+                time.sleep(1)
+
+        if stop_playing:
+            player_thread = None
+            return
+
         logger.info(u"Current folder: {}".format(current_folder))
         current_folder.now_playing = True
         current_folder.save()
 
-        player.connect()
         for song in current_folder.songs.all():
             del song.skipped
             if song.skipped:
@@ -54,7 +73,7 @@ def _play_thread():
             song.save()
 
             player.play(song.mp3_path(), song.tree_path())
-            while not player.stopped_event.wait(0.1):
+            while not player.wait_for_end(0.1):
                 del song.skipped
                 if song.skipped or skip_rest_of_current_folder or stop_playing:
                     player.stop()
@@ -70,8 +89,8 @@ def _play_thread():
                 break
 
         current_folder.now_playing = False
+        current_folder.selected = False
         current_folder.save()
-        current_folder.bottom()
 
     player_thread = None
 
