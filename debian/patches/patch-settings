@@ -4,8 +4,8 @@ Author: Jan-Pascal van Best <janpascal@vanbest.org>
 This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
 Index: hackradio/hackradio/settings.py
 ===================================================================
---- hackradio.orig/hackradio/settings.py	2016-10-26 11:57:52.463259722 +0200
-+++ hackradio/hackradio/settings.py	2016-10-26 11:58:36.425791811 +0200
+--- hackradio.orig/hackradio/settings.py	2017-03-25 21:11:45.686040479 +0100
++++ hackradio/hackradio/settings.py	2017-03-25 21:13:27.870203865 +0100
 @@ -20,13 +20,10 @@
  # Quick-start development settings - unsuitable for production
  # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
@@ -31,7 +31,7 @@ Index: hackradio/hackradio/settings.py
          'APP_DIRS': True,
          'OPTIONS': {
              'context_processors': [
-@@ -77,46 +74,6 @@
+@@ -77,51 +74,8 @@
  
  WSGI_APPLICATION = 'hackradio.wsgi.application'
  
@@ -63,7 +63,11 @@ Index: hackradio/hackradio/settings.py
 -JUKEBOX_UPLOAD_DIR = config.get('jukebox', 'JUKEBOX_UPLOAD_DIR')
 -
 -JUKEBOX_STREAM_URL = config.get('jukebox', 'JUKEBOX_STREAM_URL')
--JUKEBOX_CONVERT_CONCURRENCY = config.getint('jukebox', 'JUKEBOX_CONVERT_CONCURRENCY');
+-JUKEBOX_CONVERT_CONCURRENCY = config.getint('jukebox', 'JUKEBOX_CONVERT_CONCURRENCY')
+-
+ MEDIA_ROOT = os.path.join(BASE_DIR, "files")
+ 
+-JUKEBOX_OUTPUT_MODULE = config.get('jukebox', 'JUKEBOX_OUTPUT_MODULE')
 -
 -# Database
 -# https://docs.djangoproject.com/en/1.10/ref/settings/#databases
@@ -75,10 +79,11 @@ Index: hackradio/hackradio/settings.py
 -    }
 -}
 -
- 
+-
  # Password validation
  # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
-@@ -151,16 +108,19 @@
+ 
+@@ -155,16 +109,19 @@
  USE_TZ = True
  
  
@@ -103,7 +108,7 @@ Index: hackradio/hackradio/settings.py
      'handlers': {
          'console': {
              'class': 'logging.StreamHandler',
-@@ -168,19 +128,35 @@
+@@ -172,19 +129,35 @@
          'file': {
              'level': 'DEBUG',
              'class': 'logging.FileHandler',

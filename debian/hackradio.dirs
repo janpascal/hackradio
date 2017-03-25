@@ -1,6 +1,7 @@
 usr/share/hackradio/static/jukebox/javascript
 usr/share/hackradio/static/jukebox/stylesheets
 usr/share/hackradio/static/jukebox/fonts
+usr/share/hackradio/files
 /etc/hackradio
 /etc/apache2/conf-available
 /var/lib/hackradio

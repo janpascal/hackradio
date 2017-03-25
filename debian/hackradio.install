@@ -11,3 +11,4 @@ jukebox/static/jukebox/fonts/* usr/share/hackradio/static/jukebox/fonts/
 jukebox/static/jukebox/images/* usr/share/hackradio/static/jukebox/images/
 debian/settings.py.template usr/share/hackradio/debian/
 debian/dbsettings.py.template usr/share/hackradio/debian/
+files/* usr/share/hackradio/files/

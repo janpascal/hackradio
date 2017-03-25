@@ -17,7 +17,8 @@ Depends: lsb-base (>= 3.1-13), ${python:Depends}, ${misc:Depends},
  python-concurrent.futures,
  libjs-jquery-ui-theme-ui-lightness, libjs-bootstrap,
  libjs-jsrender,
- flac, ffmpeg, lame, musepack-tools, vorbis-tools
+ flac, ffmpeg, lame, musepack-tools, vorbis-tools,
+ libvlc5
 Recommends: mysql-client, ${misc:Recommends}
 Suggests: mysql-server, icecast2
 Description: Web application for a collaborative jukebox.

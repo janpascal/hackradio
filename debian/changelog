@@ -1,3 +1,13 @@
+hackradio (3.0-1) unstable; urgency=medium
+
+  * Upstream release 3.0:
+    Second output module: configure LIBVLC or SHOUT
+    Organise folders per collection
+    Delete collection (and all its folders)
+    Fix for icecast stream stopping when no song was playing
+
+ -- Jan-Pascal van Best <janpascal@vanbest.org>  Sat, 25 Mar 2017 21:00:48 +0100
+
 hackradio (2.2-1) unstable; urgency=medium
 
   * Upstream release 2.2:
