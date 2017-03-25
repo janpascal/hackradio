@@ -365,6 +365,6 @@ def refresh_collection(request, collection_id):
 def delete_collection(request, collection_id):
     collection = Collection.objects.get(pk=collection_id)
     logger.info("Deleting collection {}".format(collection.name))
-    collection.delete()
+    util.delete_collection(collection)
     return HttpResponse("OK")
 

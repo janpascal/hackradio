@@ -31,6 +31,18 @@ def upload_status():
     global _upload_status
     return _upload_status
 
+# Return None if no descendants from another collection
+# or the other collection to which at least one descendant belongs
+def has_other_descendants(folder, collection):
+    for child in folder.children.all():
+        if child.collection != collection:
+            return child.collection
+        other = has_other_descendants(child, collection)
+        if other is not None:
+            return other
+
+    return None
+
 def import_collection(root_dir, name = None):
     if name is None:
         name = os.path.basename(root_dir)
@@ -41,7 +53,35 @@ def import_collection(root_dir, name = None):
 
     obsolete_folders = Folder.objects.filter(collection=collection).exclude(id__in = folder_ids)
     logger.info("Obsolete folders: {}".format(list(obsolete_folders.values())))
-    obsolete_folders.delete()
+    #obsolete_folders.delete()
+
+    # TODO: this is not correct yet!
+    # Not so fast: folders from other collections that have been moved below
+    # one of the folders to be deleted will get unreachable
+    # So, for each folder to be deleted, find out of one of its descendants is from
+    # another collection. In that case, replace the folder by a dummy folder
+    for folder in obsolete_folders:
+        other_coll = has_other_descendants(folder, collection)
+        if other_coll is not None:
+            logger.info("To be removed folder {} from collection {} has descendant in collection {}".format(folder.tree_path(), collection.name, other_coll.name))
+            new_folder = Folder(name=folder.name, collection=collection,
+                disk_path="", parent=folder.parent)
+            new_folder.save()
+            for child in folder.children.all():
+                child.parent = new_folder
+                child.save()
+            logger.info("Created dummy folder to replace it")
+
+    # Check, check, double check
+    success = True
+    for folder in obsolete_folders:
+        other_coll = has_other_descendants(folder, collection)
+        if other_coll is not None:
+            logger.error("To be removed folder {} from collection {} has descendant in collection {}".format(folder.tree_path(), collection.name, other_coll.name))
+            success = False
+
+    if success:
+        obsolete_folders.delete()
     _current_dir = ''
 
     return True
@@ -117,3 +157,41 @@ def import_ziparchive(name, f):
         import_collection(archive_dir, name=name)
 
     _upload_status = UPLOAD_STATUS_NONE
+
+def delete_collection(collection):
+    obsolete_folders = Folder.objects.filter(collection=collection)
+    logger.info("Folders in collection to delete: {}".format(list(obsolete_folders.values())))
+
+    # Not so fast: folders from other collections that have been moved below
+    # one of the folders to be deleted will get unreachable
+    # So, for each folder to be deleted, find out of one of its descendants is from
+    # another collection. In that case, replace the folder by a dummy folder
+    for folder in obsolete_folders:
+        logger.info("Looking at folder {}".format(folder.name))
+        other_coll = has_other_descendants(folder, collection)
+        if other_coll is None:
+            folder.delete()
+        else:
+            logger.info("To be removed folder {} from collection {} has descendant in collection {}".format(folder.name, collection.name, other_coll.name))
+            folder.disk_path = ""
+            folder.collection = other_coll
+            folder.selectable = False
+            folder.selected = False
+            folder.now_playing = False
+            folder.save()
+            logger.info("Moved folder {} to collection {}".format(folder.name, other_coll.name))
+
+    # Check, check, double check
+    success = True
+    obsolete_folders = Folder.objects.filter(collection=collection)
+    logger.info("Folders left to delete: {}".format(list(obsolete_folders.values())))
+    for folder in obsolete_folders:
+        other_coll = has_other_descendants(folder, collection)
+        if other_coll is not None:
+            logger.error("To be removed folder {} from collection {} STILL has descendant in collection {}".format(folder.tree_path(), collection.name, other_coll.name))
+            success = False
+
+    if success:
+        collection.delete()
+
+
