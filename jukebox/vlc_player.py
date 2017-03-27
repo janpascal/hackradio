@@ -73,3 +73,6 @@ class VLCPlayer:
 
     def get_volume(self):
         return self.player.audio_get_volume()
+
+    def needs_convert(self):
+        return False

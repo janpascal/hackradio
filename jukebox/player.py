@@ -49,3 +49,6 @@ class Player:
 
     def get_volume(self):
         return self.volume
+
+    def needs_convert(self):
+        return False

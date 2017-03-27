@@ -131,7 +131,7 @@ class Song(models.Model):
         if self.converted_path:
             return self.converted_path
         else:
-            return os.path.join(self.folder.disk_path, self.filename)
+            return self.disk_path()
 
     def tree_path(self):
         return self.folder.tree_path() + '/' + self.filename

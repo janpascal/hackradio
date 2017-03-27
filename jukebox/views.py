@@ -247,8 +247,11 @@ def select_folder(request, folder_id):
     folder.selected = True
     folder.save()
     folder.bottom()
-    converter.queue_convert_folder(folder)
-    converting = bool(converter.get_running()) or bool(converter.get_queued())
+    if queue_player.needs_convert():
+        converter.queue_convert_folder(folder)
+        converting = bool(converter.get_running()) or bool(converter.get_queued())
+    else:
+        converting = False
 
     return JsonResponse({"selected": True, "converting": converting})
 
@@ -268,8 +271,9 @@ def toggle_folder(request, folder_id):
     converting = False
     if folder.selected:
         folder.bottom()
-        converter.queue_convert_folder(folder)
-        converting = bool(converter.get_running()) or bool(converter.get_queued())
+        if queue_player.needs_convert():
+            converter.queue_convert_folder(folder)
+            converting = bool(converter.get_running()) or bool(converter.get_queued())
     folder.save()
 
     return JsonResponse({"selected": folder.selected, "converting": converting})

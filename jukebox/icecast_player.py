@@ -169,3 +169,6 @@ class IcecastPlayer:
 
     def get_volume(self):
         return 100
+
+    def needs_convert(self):
+        return True
