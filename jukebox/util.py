@@ -52,7 +52,7 @@ def import_collection(root_dir, name = None):
     recurse_import_dir(collection, root_dir, None, display_dir="", folder_ids=folder_ids)
 
     obsolete_folders = Folder.objects.filter(collection=collection).exclude(id__in = folder_ids)
-    logger.info("Obsolete folders: {}".format(list(obsolete_folders.values())))
+    #logger.info("Obsolete folders: {}".format(list(obsolete_folders.values())))
     #obsolete_folders.delete()
 
     # TODO: this is not correct yet!
@@ -160,14 +160,14 @@ def import_ziparchive(name, f):
 
 def delete_collection(collection):
     obsolete_folders = Folder.objects.filter(collection=collection)
-    logger.info("Folders in collection to delete: {}".format(list(obsolete_folders.values())))
+    #logger.info("Folders in collection to delete: {}".format(list(obsolete_folders.values())))
 
     # Not so fast: folders from other collections that have been moved below
     # one of the folders to be deleted will get unreachable
     # So, for each folder to be deleted, find out of one of its descendants is from
     # another collection. In that case, replace the folder by a dummy folder
     for folder in obsolete_folders:
-        logger.info("Looking at folder {}".format(folder.name))
+        logger.info("Looking at deleting folder {}".format(folder.name))
         other_coll = has_other_descendants(folder, collection)
         if other_coll is None:
             folder.delete()

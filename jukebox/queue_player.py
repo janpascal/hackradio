@@ -64,15 +64,19 @@ def _play_thread():
                 song.save()
                 continue
 
-            if song.convertable and not song.conversion_done():
+            if player.needs_convert() and song.convertable and not song.conversion_done():
                 logger.warning(u"Skipping {}, not converted yet".format(song.filename))
                 continue
 
             logger.info(u"Playing {}".format(song.filename))
             song.now_playing = True
             song.save()
+            
+            if player.needs_convert():  
+                player.play(song.mp3_path(), song.tree_path())
+            else:
+                player.play(song.disk_path(), song.tree_path())
 
-            player.play(song.mp3_path(), song.tree_path())
             while not player.wait_for_end(0.1):
                 del song.skipped
                 if song.skipped or skip_rest_of_current_folder or stop_playing:
@@ -143,4 +147,16 @@ def now_playing():
     else:
         song_list = []
     return song_list, current_folder, current_song
+
+def set_volume(volume):
+    global player
+    player.set_volume(volume)
+
+def get_volume():
+    global player
+    return player.get_volume()
+
+def needs_convert():
+    global player
+    return player.needs_convert()
 

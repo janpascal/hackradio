@@ -247,8 +247,11 @@ def select_folder(request, folder_id):
     folder.selected = True
     folder.save()
     folder.bottom()
-    converter.queue_convert_folder(folder)
-    converting = bool(converter.get_running()) or bool(converter.get_queued())
+    if queue_player.needs_convert():
+        converter.queue_convert_folder(folder)
+        converting = bool(converter.get_running()) or bool(converter.get_queued())
+    else:
+        converting = False
 
     return JsonResponse({"selected": True, "converting": converting})
 
@@ -268,8 +271,9 @@ def toggle_folder(request, folder_id):
     converting = False
     if folder.selected:
         folder.bottom()
-        converter.queue_convert_folder(folder)
-        converting = bool(converter.get_running()) or bool(converter.get_queued())
+        if queue_player.needs_convert():
+            converter.queue_convert_folder(folder)
+            converting = bool(converter.get_running()) or bool(converter.get_queued())
     folder.save()
 
     return JsonResponse({"selected": folder.selected, "converting": converting})
@@ -367,4 +371,16 @@ def delete_collection(request, collection_id):
     logger.info("Deleting collection {}".format(collection.name))
     util.delete_collection(collection)
     return HttpResponse("OK")
+
+def set_volume(request, volume):
+    volume = int(volume)
+    if (volume<0 or volume>100):
+        logger.info("Illegal volume value {}".format(volume))
+    else:
+        logger.info("Setting volume to {}".format(volume))
+        queue_player.set_volume(volume)
+    return HttpResponse("OK")
+
+def get_volume(request):
+    return JsonResponse({"volume": queue_player.get_volume()})
 

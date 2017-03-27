@@ -15,6 +15,7 @@ class Player:
         self._stopped_event = threading.Event()
         self.logger = logging.getLogger(__name__)
         self._thread = None
+        self.volume = 100
 
     def _fake_play(self):
         for t in range(0,300):
@@ -42,3 +43,12 @@ class Player:
         self.should_stop = True
         if not self.wait_for_end(30.0):
             self.logger.error("Did NOT receive message that thread actually stopped, will cause trouble later!")
+
+    def set_volume(self, volume):
+        self.volume = volume
+
+    def get_volume(self):
+        return self.volume
+
+    def needs_convert(self):
+        return False

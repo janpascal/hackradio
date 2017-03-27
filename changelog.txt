@@ -1,5 +1,11 @@
 Changelog for hackradio
 
+v3.1 (2017-03-27)
+    Added volume slider
+    Fix for player stalls for 10 seconds when track skipped using LIBVLC output
+    Fix for no sound when using LIBVLC output and running as WSGI process
+    Do not convert files to MP3 when using LIBVLC output
+
 v3.0 (2017-03-25)
     Second output module: configure LIBVLC or SHOUT
     Organise folders per collection

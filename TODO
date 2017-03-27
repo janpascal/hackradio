@@ -8,4 +8,6 @@
   - dnd in multiple windows (from one to another)?
   - context menu move-to, which opens the tree
 - Think about what 'selection' in the tree view is supposed to mean
-
+- When a collection is deleted, remove its associated converted mp3
+  files, too
+- Same for uploaded ZIP files
