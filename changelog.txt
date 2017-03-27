@@ -1,5 +1,8 @@
 Changelog for hackradio
 
+v3.2 (2017-03-27)
+    Added pause/resume button; Moved volume slider to top menu bar,
+
 v3.1 (2017-03-27)
     Added volume slider
     Fix for player stalls for 10 seconds when track skipped using LIBVLC output
