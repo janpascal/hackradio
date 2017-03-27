@@ -15,13 +15,14 @@ from django.conf import settings
 
 class VLCPlayer:
     def __init__(self):
-        #self.instance = vlc.Instance(["--sub-source=marq"])
-        self.instance = vlc.Instance()
+        #self.instance = vlc.Instance("--verbose 3 --rc-fake-tty")
+        # rc-fake-tty option is necessary when running as a WSGI process
+        self.instance = vlc.Instance("--rc-fake-tty")
         self.player = self.instance.media_player_new()
         self.stopped_event = threading.Event()
         self.logger = logging.getLogger(__name__)
         def end_callback(event):
-            print('End of media stream (event %s)' % event.type)
+            self.logger.info('End of media stream (event {})'.format(event.type))
             self.stopped_event.set()
         event_manager = self.player.event_manager()
         event_manager.event_attach(EventType.MediaPlayerEndReached, end_callback)
@@ -39,7 +40,7 @@ class VLCPlayer:
         try:
             media = self.instance.media_new(filename)
         except (AttributeError, NameError) as e:
-            print('%s: %s (%s %s vs LibVLC %s)' % (e.__class__.__name__, e,
+            self.logger.warning('%s: %s (%s %s vs LibVLC %s)' % (e.__class__.__name__, e,
                                                    sys.argv[0], __version__,
                                                    libvlc_get_version()))
             return

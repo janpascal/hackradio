@@ -14,4 +14,5 @@ class JukeboxConfig(AppConfig):
             queue_player.stop()
             raise KeyboardInterrupt
 
-        signal.signal(signal.SIGINT, _exit)
+        # Cannot use signals when running as WSGI app
+        # signal.signal(signal.SIGINT, _exit)
