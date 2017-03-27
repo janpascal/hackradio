@@ -26,6 +26,7 @@ class VLCPlayer:
             self.stopped_event.set()
         event_manager = self.player.event_manager()
         event_manager.event_attach(EventType.MediaPlayerEndReached, end_callback)
+        event_manager.event_attach(EventType.MediaPlayerStopped, end_callback)
 
     def connect(self, force=False):
         pass
