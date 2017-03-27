@@ -67,3 +67,9 @@ class VLCPlayer:
             self.logger.error("Did NOT receive message that thread actually stopped, will cause trouble later!")
         
         #self.stopped_event.set()
+
+    def set_volume(self, volume):
+        self.player.audio_set_volume(volume)
+
+    def get_volume(self):
+        return self.player.audio_get_volume()

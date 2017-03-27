@@ -44,5 +44,7 @@ urlpatterns = [
     url(r'^folder/(?P<folder_id>[0-9]*)/rename$', views.rename_folder, name='rename_folder'),
     url(r'^folder/(?P<folder_id>[0-9]*)/delete$', views.delete_folder, name='delete_folder'),
     url(r'^folder/skipcurrent$', views.skip_current_folder, name='skip_current_folder'),
+    url(r'^volume/set/(?P<volume>[0-9]+)$', views.set_volume, name="set_volume"),
+    url(r'^volume/get$', views.get_volume, name="get_volume"),
 ]
 

@@ -144,3 +144,11 @@ def now_playing():
         song_list = []
     return song_list, current_folder, current_song
 
+def set_volume(volume):
+    global player
+    player.set_volume(volume)
+
+def get_volume():
+    global player
+    return player.get_volume()
+

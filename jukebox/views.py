@@ -368,3 +368,15 @@ def delete_collection(request, collection_id):
     util.delete_collection(collection)
     return HttpResponse("OK")
 
+def set_volume(request, volume):
+    volume = int(volume)
+    if (volume<0 or volume>100):
+        logger.info("Illegal volume value {}".format(volume))
+    else:
+        logger.info("Setting volume to {}".format(volume))
+        queue_player.set_volume(volume)
+    return HttpResponse("OK")
+
+def get_volume(request):
+    return JsonResponse({"volume": queue_player.get_volume()})
+

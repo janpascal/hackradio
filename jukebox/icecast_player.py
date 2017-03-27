@@ -163,3 +163,9 @@ class IcecastPlayer:
         stopped = self.stopped_event.wait(30.0)
         if not stopped:
             self.logger.error("Did NOT receive message that thread actually stopped, will cause trouble later!")
+
+    def set_volume(self, volume):
+        pass
+
+    def get_volume(self):
+        return 100
