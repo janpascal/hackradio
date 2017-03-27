@@ -10,15 +10,6 @@
 
   <p>&nbsp;</p>
 
-  <div class="panel panel-default">
-      <div class="panel-heading"><span class="glyphicon glyphicon-volume-up" aria-hidden="true"></span> Volume</div>
-      <div class="panel-body">
-          <div id="volume_slider">
-              <div id="volume_slider_handle" class="ui-slider-handle"></div>
-          </div>
-      </div>
-  </div>
-
         <table id="now_playing" class="table table-striped">
         <thead>
             <tr>
@@ -116,24 +107,6 @@ $(document).ready( function() {
     update_now_playing();
 
     $(".skip_current_folder").click(skip_current_folder_click);
-    var handle = $("#volume_slider_handle");
-    $("#volume_slider").slider({
-        create: function() {
-            $.get(Urls['jukebox:get_volume'](), function(data){
-                //alert("Got volume: " + data.volume);
-                $("#volume_slider").slider("value", data.volume);
-                handle.text(data.volume);
-            });
-            //handle.text($(this).slider("value"));
-        },
-        slide: function(event, ui) {
-            handle.text(ui.value);
-        },
-        change: function(event, ui) {
-            $.get(Urls['jukebox:set_volume'](ui.value), function(data){
-            });
-        }
-    });
 
     setInterval(update_now_playing, 1000);
 });
