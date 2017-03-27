@@ -1,3 +1,13 @@
+hackradio (3.1-1) unstable; urgency=medium
+
+  * Upstream release 3.1:
+    Added volume slider
+    Fix for player stalls for 10 seconds when track skipped using LIBVLC output
+    Fix for no sound when using LIBVLC output and running as WSGI process
+    Do not convert files to MP3 when using LIBVLC output
+
+ -- Jan-Pascal van Best <janpascal@vanbest.org>  Mon, 27 Mar 2017 17:50:46 +0200
+
 hackradio (3.0-1) unstable; urgency=medium
 
   * Upstream release 3.0:
