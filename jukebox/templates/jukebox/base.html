@@ -26,7 +26,16 @@
                 <li role="presentation" {% if page_id == "select_folders" %} class="active" {% endif %}><a href="{% url 'jukebox:select_folders' %}">Select Folders</a></li>
                 <li role="presentation" {% if page_id == "collections" %} class="active" {% endif %}><a href="{% url 'jukebox:collections' %}">Collections</a></li>
                 <li role="presentation" {% if page_id == "upload" %} class="active" {% endif %}><a href="{% url 'jukebox:upload' %}">Upload</a></li>
-                <li role="presentation"><a class="play" href="{{ stream_url }}"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></a></li>
+                <li role="presentation"><a class="play" href="{{ stream_url }}"><span class="glyphicon glyphicon-headphones" aria-hidden="true"></span></a></li>
+                <li role="presentation"><a class="play playing" id="play_button" href="#"><span class="glyphicon glyphicon-pause" aria-hidden="true"></span></a></li>
+                <li class="dropdown">
+                  <a data-toggle="dropdown" class="dropdown-toggle" href="#">Volume <b class="caret"></b></a>
+                  <ul class="dropdown-menu">
+                    <li><a href="#">
+                        <div id="volume_slider"><div id="volume_slider_handle" class="ui-slider-handle"></div></div>
+                        </a></li>
+                  </ul>
+                </li>
             </ul>
         </nav>
 
@@ -41,5 +50,55 @@
 
         {% block content %}{% endblock %}
         </div>
+
+        <script>
+            function update_play_button(playing) {
+                var icon = $("#play_button>span");
+                if (playing) {
+                    icon.removeClass("glyphicon-play");
+                    icon.addClass("glyphicon-pause");
+                    $("#play_button").addClass("playing");
+                } else {
+                    icon.removeClass("glyphicon-pause");
+                    icon.addClass("glyphicon-play");
+                    $("#play_button").removeClass("playing");
+                }
+            }
+
+            function play_clicked(event) {
+                if ( $("#play_button").hasClass("playing") ) {
+                    $.get(Urls['jukebox:pause'](), function(data){
+                        update_play_button(false);
+                    });
+                } else {
+                    $.get(Urls['jukebox:resume'](), function(data){
+                        update_play_button(true);
+                    });
+                };
+            }
+
+            $("#play_button").click(play_clicked);
+            $.get(Urls['jukebox:is_playing'](), function(data){
+                update_play_button(data.playing);
+            });
+
+            var handle = $("#volume_slider_handle");
+            $("#volume_slider").slider({
+                create: function() {
+                    $.get(Urls['jukebox:get_volume'](), function(data){
+                        //alert("Got volume: " + data.volume);
+                        $("#volume_slider").slider("value", data.volume);
+                        handle.text(data.volume);
+                    });
+                    //handle.text($(this).slider("value"));
+                },
+                slide: function(event, ui) {
+                    handle.text(ui.value);
+                    $.get(Urls['jukebox:set_volume'](ui.value), function(data){
+                    });
+                }
+            });
+        </script>
+
     </body>
 </html>

@@ -25,6 +25,8 @@ urlpatterns = [
     url(r'^folder/(?P<folder_id>[0-9]*)/songs$', views.folder_songs, name='folder_songs'),
     url(r'^folder/search$', views.search_folder, name='search_folder'),
     url(r'^subdirs/(?P<folder_id>[0-9]*)$', views.folder_subdirs, name="folder_subdirs"),
+    url(r'^volume/get$', views.get_volume, name="get_volume"),
+    url(r'^is_playing$', views.is_playing, name="is_playing"),
 
     # Actions
     url(r'^import_collection$', views.import_collection, name='import_collection'),
@@ -45,6 +47,7 @@ urlpatterns = [
     url(r'^folder/(?P<folder_id>[0-9]*)/delete$', views.delete_folder, name='delete_folder'),
     url(r'^folder/skipcurrent$', views.skip_current_folder, name='skip_current_folder'),
     url(r'^volume/set/(?P<volume>[0-9]+)$', views.set_volume, name="set_volume"),
-    url(r'^volume/get$', views.get_volume, name="get_volume"),
+    url(r'^pause$', views.pause, name="pause"),
+    url(r'^resume$', views.resume, name="resume"),
 ]
 

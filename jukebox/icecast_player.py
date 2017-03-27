@@ -172,3 +172,11 @@ class IcecastPlayer:
 
     def needs_convert(self):
         return True
+
+    def pause(self):
+        self.logger.warning("Pause not implemented for Icecast player")
+
+    def resume(self):
+        self.logger.warning("Resume not implemented for Icecast player")
+        self.player.setpause(False)
+

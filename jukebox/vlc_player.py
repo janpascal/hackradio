@@ -53,7 +53,6 @@ class VLCPlayer:
         self.logger.info("Started play")
 
     def is_playing(self):
-        self.logger.info("VLC playing: {}".format(self.player.is_playing()))
         return self.player.is_playing()
 
     def wait_for_end(self, timeout):
@@ -76,3 +75,9 @@ class VLCPlayer:
 
     def needs_convert(self):
         return False
+
+    def pause(self):
+        self.player.set_pause(True)
+
+    def resume(self):
+        self.player.set_pause(False)

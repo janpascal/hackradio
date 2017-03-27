@@ -125,8 +125,9 @@ def stop():
 
 def is_playing():
     global player_thread
+    global player
 
-    return player_thread is not None
+    return player_thread is not None and player.is_playing()
 
 def skip_current_folder():
     global skip_rest_of_current_folder
@@ -159,4 +160,12 @@ def get_volume():
 def needs_convert():
     global player
     return player.needs_convert()
+
+def pause():
+    global player
+    player.pause()
+
+def resume():
+    global player
+    player.resume()
 
