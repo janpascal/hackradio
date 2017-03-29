@@ -17,3 +17,12 @@ JUKEBOX_CONVERT_CONCURRENCY = 4
 
 # Choose SHOUT or LIBVLC
 JUKEBOX_OUTPUT_MODULE = SHOUT
+
+# File extensions to include in the database
+# For LIBVLC output, these should be playable to VLC
+# For SHOUT output, these should be readable by ffmpeg (with 
+# a few special cases in jukebox/converter.py)
+
+JUKEBOX_EXTENSIONS = mp3 flac ogg mpc m4a wav
+
+FFMPEG_OPTIONS = -codec:a libmp3lame -qscale:a 2 -loglevel warning

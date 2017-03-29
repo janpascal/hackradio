@@ -42,10 +42,10 @@ def convert_mpc_to_mp3(mpcfile, mp3file):
 
     subprocess.call(commandline, shell=True)
 
-def convert_m4a_to_mp3(m4afile, mp3file):
-    m4a_quoted = pipes.quote(m4afile)
+def convert_generic_to_mp3(infile, mp3file):
+    in_quoted = pipes.quote(infile)
     mp3_quoted = pipes.quote(mp3file)
-    commandline = "/usr/bin/ffmpeg -i " + m4a_quoted + " " + mp3_quoted
+    commandline = "/usr/bin/ffmpeg -i " + in_quoted + " " + settings.FFMPEG_OPTIONS + " " + mp3_quoted
     logger.info("Command line: {}".format(commandline))
 
     subprocess.call(commandline, shell=True)
@@ -61,17 +61,15 @@ def convert_song(song):
     cache_path = cache_path + str(i) + ".mp3"
     logger.info("Path for converted mp3: {}".format(cache_path))
 
-    if extension == ".flac":
-        convert_flac_to_mp3(disk_path, cache_path)
-    elif extension == ".ogg":
-        convert_ogg_to_mp3(disk_path, cache_path)
-    elif extension == ".mpc":
-        convert_mpc_to_mp3(disk_path, cache_path)
-    elif extension == ".m4a":
-        convert_m4a_to_mp3(disk_path, cache_path)
-    else:
-        logger.warning("Unable to convert files of this type: {}".format(disk_path))
-        return
+#    if extension == ".flac":
+#        convert_flac_to_mp3(disk_path, cache_path)
+#    elif extension == ".ogg":
+#        convert_ogg_to_mp3(disk_path, cache_path)
+#    elif extension == ".mpc":
+#        convert_mpc_to_mp3(disk_path, cache_path)
+#    else:
+#        convert_generic_to_mp3(disk_path, cache_path)
+    convert_generic_to_mp3(disk_path, cache_path)
     song.converted_path = cache_path
     song.save()
 

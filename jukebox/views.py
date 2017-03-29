@@ -18,6 +18,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
 
 from models import Collection, Folder, Song
+from player import Player
 import queue_player
 import util
 import converter
@@ -27,33 +28,36 @@ logger = logging.getLogger(__name__)
 
 # HTML pages
 
-def index(request):
+def base_context():
+    flags = queue_player.flags
     context = {
-        "page_id": "index",
-        "stream_url": settings.JUKEBOX_STREAM_URL
+        "stream_url": settings.JUKEBOX_STREAM_URL,
+        "player_needs_convert": ((flags & Player.PLAYER_NEEDS_CONVERT) != 0),
+        "player_supports_pause": ((flags & Player.PLAYER_SUPPORTS_PAUSE) != 0),
+        "player_supports_volume": ((flags & Player.PLAYER_SUPPORTS_VOLUME) != 0),
+        "player_has_play_url": ((flags & Player.PLAYER_HAS_PLAY_URL) != 0)
     }
+    return context
+
+def index(request):
+    context = base_context()
+    context["page_id"] = "index"
     return render(request, "jukebox/index.html", context)
 
 def queue(request):
-    context = {
-        "page_id": "queue",
-        "stream_url": settings.JUKEBOX_STREAM_URL
-    }
+    context = base_context()
+    context["page_id"] = "queue"
     return render(request, "jukebox/queue.html", context)
 
 def select_folders(request):
-    context = {
-        "page_id": "select_folders",
-        "stream_url": settings.JUKEBOX_STREAM_URL
-    }
+    context = base_context()
+    context["page_id"] = "select_folders"
     return render(request, "jukebox/select_folders.html", context)
 
 def collections_page(request):
-    context = {
-        "page_id": "collections",
-        "stream_url": settings.JUKEBOX_STREAM_URL,
-        "collections": Collection.objects.all().annotate(Count('folders'))
-    }
+    context = base_context()
+    context["page_id"] = "collections"
+    context["collections"] = Collection.objects.all().annotate(Count('folders'))
     return render(request, "jukebox/collections.html", context)
 
 def upload_page(request):
@@ -247,7 +251,7 @@ def select_folder(request, folder_id):
     folder.selected = True
     folder.save()
     folder.bottom()
-    if queue_player.needs_convert():
+    if queue_player.flags & Player.PLAYER_NEEDS_CONVERT:
         converter.queue_convert_folder(folder)
         converting = bool(converter.get_running()) or bool(converter.get_queued())
     else:
@@ -271,7 +275,7 @@ def toggle_folder(request, folder_id):
     converting = False
     if folder.selected:
         folder.bottom()
-        if queue_player.needs_convert():
+        if queue_player.flags & Player.PLAYER_NEEDS_CONVERT:
             converter.queue_convert_folder(folder)
             converting = bool(converter.get_running()) or bool(converter.get_queued())
     folder.save()
@@ -393,3 +397,4 @@ def resume(request):
 
 def is_playing(request):
     return JsonResponse({"playing": queue_player.is_playing()})
+

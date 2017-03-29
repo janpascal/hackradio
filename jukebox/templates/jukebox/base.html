@@ -26,8 +26,13 @@
                 <li role="presentation" {% if page_id == "select_folders" %} class="active" {% endif %}><a href="{% url 'jukebox:select_folders' %}">Select Folders</a></li>
                 <li role="presentation" {% if page_id == "collections" %} class="active" {% endif %}><a href="{% url 'jukebox:collections' %}">Collections</a></li>
                 <li role="presentation" {% if page_id == "upload" %} class="active" {% endif %}><a href="{% url 'jukebox:upload' %}">Upload</a></li>
+                {% if player_has_play_url %}
                 <li role="presentation"><a class="play" href="{{ stream_url }}"><span class="glyphicon glyphicon-headphones" aria-hidden="true"></span></a></li>
+                {% endif %}
+                {% if player_supports_pause %}
                 <li role="presentation"><a class="play playing" id="play_button" href="#"><span class="glyphicon glyphicon-pause" aria-hidden="true"></span></a></li>
+                {% endif %}
+                {% if player_supports_volume %}
                 <li class="dropdown">
                   <a data-toggle="dropdown" class="dropdown-toggle" href="#">Volume <b class="caret"></b></a>
                   <ul class="dropdown-menu">
@@ -36,6 +41,7 @@
                         </a></li>
                   </ul>
                 </li>
+                {% endif %}
             </ul>
         </nav>
 

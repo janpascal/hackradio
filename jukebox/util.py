@@ -103,6 +103,7 @@ def recurse_import_dir(collection, root_path, parent, display_dir, folder_ids):
     folder.parent = parent
     folder.save()
     songs = []
+    extension = [".{}".format(s) for s in settings.JUKEBOX_EXTENSIONS]
     for f in os.listdir(root_path):
         logger.debug(u"Examining file {} in dir {}".format(f, root_path))
         disk_path = os.path.join(root_path, f)
@@ -111,7 +112,7 @@ def recurse_import_dir(collection, root_path, parent, display_dir, folder_ids):
             found_in_subtree = recurse_import_dir(collection, disk_path, folder, display_dir + "/" + f, folder_ids)
             found_something = found_something or found_in_subtree
         _,extension = os.path.splitext(f)
-        if os.path.isfile(disk_path) and extension in [".mp3", ".flac", ".ogg", ".mpc", ".m4a"]:
+        if os.path.isfile(disk_path) and extension in extensions:
             logger.info(u"Importing song {}".format(disk_path))
             folder.selectable = True
             found_something = True
