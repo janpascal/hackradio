@@ -13,6 +13,7 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 
 from models import Folder, Song
+from player import Player
 from icecast_player import IcecastPlayer
 from vlc_player import VLCPlayer
 
@@ -30,6 +31,8 @@ logger = logging.getLogger(__name__)
 
 skip_rest_of_current_folder = False
 stop_playing = False
+
+flags = player.flags
 
 def _play_thread():
     global skip_rest_of_current_folder
@@ -64,7 +67,7 @@ def _play_thread():
                 song.save()
                 continue
 
-            if player.needs_convert() and song.convertable and not song.conversion_done():
+            if (player.flags & Player.PLAYER_NEEDS_CONVERT) and song.convertable and not song.conversion_done():
                 logger.warning(u"Skipping {}, not converted yet".format(song.filename))
                 continue
 
@@ -72,7 +75,7 @@ def _play_thread():
             song.now_playing = True
             song.save()
             
-            if player.needs_convert():  
+            if player.flags & Player.PLAYER_NEEDS_CONVERT:
                 player.play(song.mp3_path(), song.tree_path())
             else:
                 player.play(song.disk_path(), song.tree_path())
@@ -122,11 +125,13 @@ def stop():
             logger.info("Still waiting for player to stop...")
             time.sleep(1)
             count += 1
+        player.shutdown()
 
 def is_playing():
     global player_thread
     global player
 
+    #logger.info("Player_thread: {}; player.is_playing: {}".format(player_thread, player.is_playing()))
     return player_thread is not None and player.is_playing()
 
 def skip_current_folder():
@@ -156,10 +161,6 @@ def set_volume(volume):
 def get_volume():
     global player
     return player.get_volume()
-
-def needs_convert():
-    global player
-    return player.needs_convert()
 
 def pause():
     global player

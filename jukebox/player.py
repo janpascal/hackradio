@@ -11,6 +11,14 @@ from concurrent import futures
 from django.conf import settings
 
 class Player:
+
+    PLAYER_NEEDS_CONVERT = 1
+    PLAYER_SUPPORTS_PAUSE = 2
+    PLAYER_SUPPORTS_VOLUME = 4
+    PLAYER_HAS_PLAY_URL = 8
+
+    flags = 0
+
     def __init__(self):
         self._stopped_event = threading.Event()
         self.logger = logging.getLogger(__name__)

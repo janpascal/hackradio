@@ -13,7 +13,11 @@ from vlc import EventType
 
 from django.conf import settings
 
+from player import Player
+
 class VLCPlayer:
+    flags = Player.PLAYER_SUPPORTS_PAUSE | Player.PLAYER_SUPPORTS_VOLUME
+
     def __init__(self):
         #self.instance = vlc.Instance("--verbose 3 --rc-fake-tty")
         # rc-fake-tty option is necessary when running as a WSGI process
@@ -27,15 +31,6 @@ class VLCPlayer:
         event_manager = self.player.event_manager()
         event_manager.event_attach(EventType.MediaPlayerEndReached, end_callback)
         event_manager.event_attach(EventType.MediaPlayerStopped, end_callback)
-
-    def connect(self, force=False):
-        pass
-
-    def disconnect(self):
-        pass
-
-    def reconnect(self):
-        pass
 
     def play(self, filename, display_name, quiet=False):
         try:
@@ -64,8 +59,9 @@ class VLCPlayer:
         stopped = self.wait_for_end(30.0)
         if not stopped:
             self.logger.error("Did NOT receive message that thread actually stopped, will cause trouble later!")
-        
-        #self.stopped_event.set()
+
+    def shutdown():
+        self.stop()
 
     def set_volume(self, volume):
         self.player.audio_set_volume(volume)
@@ -73,11 +69,10 @@ class VLCPlayer:
     def get_volume(self):
         return self.player.audio_get_volume()
 
-    def needs_convert(self):
-        return False
-
     def pause(self):
         self.player.set_pause(True)
 
     def resume(self):
         self.player.set_pause(False)
+
+

@@ -11,3 +11,4 @@
 - When a collection is deleted, remove its associated converted mp3
   files, too
 - Same for uploaded ZIP files
+- Cannot move root folder of uploaded ZIP in "select folders" view
