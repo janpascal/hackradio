@@ -1,5 +1,10 @@
 Changelog for hackradio
 
+v3.3 (2017-03-28)
+    Fix icecast player
+    Only show controls supported by player
+    Make music file extensions configurable
+
 v3.2 (2017-03-27)
     Added pause/resume button; Moved volume slider to top menu bar,
 
