@@ -4,8 +4,8 @@ Author: Jan-Pascal van Best <janpascal@vanbest.org>
 This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
 Index: hackradio/hackradio/settings.py
 ===================================================================
---- hackradio.orig/hackradio/settings.py	2017-03-25 21:11:45.686040479 +0100
-+++ hackradio/hackradio/settings.py	2017-03-25 21:13:27.870203865 +0100
+--- hackradio.orig/hackradio/settings.py	2017-03-29 23:35:23.825651854 +0200
++++ hackradio/hackradio/settings.py	2017-03-29 23:36:42.194890947 +0200
 @@ -20,13 +20,10 @@
  # Quick-start development settings - unsuitable for production
  # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
@@ -31,7 +31,7 @@ Index: hackradio/hackradio/settings.py
          'APP_DIRS': True,
          'OPTIONS': {
              'context_processors': [
-@@ -77,51 +74,8 @@
+@@ -77,51 +74,6 @@
  
  WSGI_APPLICATION = 'hackradio.wsgi.application'
  
@@ -65,9 +65,10 @@ Index: hackradio/hackradio/settings.py
 -JUKEBOX_STREAM_URL = config.get('jukebox', 'JUKEBOX_STREAM_URL')
 -JUKEBOX_CONVERT_CONCURRENCY = config.getint('jukebox', 'JUKEBOX_CONVERT_CONCURRENCY')
 -
- MEDIA_ROOT = os.path.join(BASE_DIR, "files")
- 
 -JUKEBOX_OUTPUT_MODULE = config.get('jukebox', 'JUKEBOX_OUTPUT_MODULE')
+-
+-JUKEBOX_EXTENSIONS = config.get('jukebox', 'JUKEBOX_EXTENSIONS')
+-FFMPEG_OPTIONS = config.get('jukebox', 'FFMPEG_OPTIONS')
 -
 -# Database
 -# https://docs.djangoproject.com/en/1.10/ref/settings/#databases
@@ -79,12 +80,11 @@ Index: hackradio/hackradio/settings.py
 -    }
 -}
 -
--
+ 
  # Password validation
  # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
- 
-@@ -155,16 +109,19 @@
- USE_TZ = True
+@@ -159,16 +111,19 @@
+ MEDIA_ROOT = os.path.join(BASE_DIR, "files")
  
  
 -# Static files (CSS, JavaScript, Images)
@@ -108,7 +108,7 @@ Index: hackradio/hackradio/settings.py
      'handlers': {
          'console': {
              'class': 'logging.StreamHandler',
-@@ -172,19 +129,35 @@
+@@ -176,19 +131,35 @@
          'file': {
              'level': 'DEBUG',
              'class': 'logging.FileHandler',

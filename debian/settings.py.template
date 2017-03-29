@@ -44,3 +44,12 @@ JUKEBOX_UPLOAD_DIR = '/var/lib/hackradio/upload'
 # Converted FLAC, m4a, ogg etc files are stored here
 JUKEBOX_CACHE_DIR = '/var/cache/hackradio/converted_files'
 
+# File extensions to include in the database
+# For LIBVLC output, these should be playable to VLC
+# For SHOUT output, these should be readable by ffmpeg (with 
+# a few special cases in jukebox/converter.py)
+JUKEBOX_EXTENSIONS = mp3 flac ogg mpc m4a wav
+
+# ffmpeg options for conversion to mp3
+FFMPEG_OPTIONS = -codec:a libmp3lame -qscale:a 2 -loglevel warning
+
