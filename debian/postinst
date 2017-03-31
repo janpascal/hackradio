@@ -26,8 +26,11 @@ if [ "$1" = configure ] ; then
     chown -R www-data:www-data /var/lib/hackradio
     chown -R www-data:www-data /var/cache/hackradio
 
+    usermod --append --groups audio www-data
+
     su --shell /bin/bash --login www-data --command "/usr/share/hackradio/manage.py migrate"
 
+    dh_apache2 a2enmod wsgi
     # dh_apache2 a2enconf hackradio
 fi
 

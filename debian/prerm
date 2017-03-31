@@ -8,5 +8,6 @@ set -e
 dbc_go hackradio $@
 
 # dh_apache2 a2disconf hackradio
+#dh_apache2 a2dismod wsgi
 
 #DEBHELPER#
