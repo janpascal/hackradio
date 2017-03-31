@@ -109,7 +109,7 @@ JUKEBOX_CONVERT_CONCURRENCY = config.getint('jukebox', 'JUKEBOX_CONVERT_CONCURRE
 
 JUKEBOX_OUTPUT_MODULE = config.get('jukebox', 'JUKEBOX_OUTPUT_MODULE')
 
-JUKEBOX_EXTENSIONS = config.get('jukebox', 'JUKEBOX_EXTENSIONS')
+JUKEBOX_EXTENSIONS = config.get('jukebox', 'JUKEBOX_EXTENSIONS').split()
 FFMPEG_OPTIONS = config.get('jukebox', 'FFMPEG_OPTIONS')
 
 # Database

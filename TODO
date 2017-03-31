@@ -12,3 +12,4 @@
   files, too
 - Same for uploaded ZIP files
 - Cannot move root folder of uploaded ZIP in "select folders" view
+- Add context menu item in "Select Folders" view to create a (Virtual) folder
