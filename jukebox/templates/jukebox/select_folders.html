@@ -203,6 +203,23 @@ $(document).ready( function() {
                             });
                         }
                     },
+                    "new_folder": {
+                        "label": "New folder",
+                        "title": "Create a new subfolder here",
+                        "action": function(obj) {
+                            var post_data = {
+                                "name": "New folder",
+                                "csrfmiddlewaretoken": '{{ csrf_token }}'
+                            }
+                            $.post(Urls['jukebox:create_folder']($node.id), post_data, function(data, textStatus, jqXHR) {
+                                // alert("create_folder done: " + data + " : " + textStatus + " : " + jqXHR);
+                                tree.refresh_node($node);
+                                // Does not work, created node not yet in jstree
+                                // new_node = $('#tree').jstree().get_node(data['id']);
+                                // $('#tree').jstree().settings.contextmenu.items(new_node)['rename'].action(new_node);
+                            });
+                        }
+                    },
                     "enqueue": {
                         "label": "Enqueue",
                         "title": "Enqueue this folder at the end of the queue",
