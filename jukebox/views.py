@@ -329,6 +329,22 @@ def rename_folder(request, folder_id):
 
     return HttpResponse("OK")
 
+def create_subfolder(request, parent_id):
+    parent = Folder.objects.get(pk=parent_id)
+    name = request.POST['name']
+
+    logger.info("Creating subfolder {} of {}".format(name, parent.name))
+
+    collection,collection_is_new = Collection.objects.get_or_create(name="Dummy collection", disk_path="")
+
+    new_folder = Folder(name=name, collection=collection, disk_path="", parent=parent)
+    new_folder.save()
+
+    response = {
+        'id': new_folder.id
+    }
+    return JsonResponse(response)
+
 def delete_folder(request, folder_id):
     folder = Folder.objects.get(pk=folder_id)
 
@@ -364,6 +380,9 @@ def import_collection(request):
 def refresh_collection(request, collection_id):
     collection = Collection.objects.get(pk=collection_id)
     logger.info("Refreshing collection {}".format(collection.name))
+    if collection.disk_path == "":
+        logger.info("Empty collection, ignoring refresh request")
+        return HttpResponse("OK")
     try:
         util.refresh_collection(collection)
     except:
