@@ -1,5 +1,10 @@
 Changelog for hackradio
 
+v3.4 (2017-04-01)
+    Included needed Python packages that are not Debian packages into source
+    Add New Folder context menu item in Select Folders view
+    Fix extensions configuration handling
+
 v3.3 (2017-03-28)
     Fix icecast player
     Only show controls supported by player
