@@ -1,3 +1,12 @@
+hackradio (3.4-1) unstable; urgency=medium
+
+  * Upstream release 3.4:
+    Included needed Python packages that are not Debian packages into source
+    Add New Folder context menu item in Select Folders view
+    Fix extensions configuration handling
+
+ -- Jan-Pascal van Best (macOS dev vm) <janpascal@vanbest.org>  Sat, 01 Apr 2017 22:10:12 +0200
+
 hackradio (3.3-1) unstable; urgency=medium
 
   * Upstream release 3.3:
