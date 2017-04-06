@@ -16,6 +16,27 @@ def remove_legacy_collection(apps, schema_editor):
     Folder.objects.all().update(collection=-1)
     Collection.objects.filter(name="Legacy", disk_path="").delete()
 
+def convert_to_utf8(apps, schema_editor):
+    if schema_editor.connection.vendor == 'mysql':
+        migrations.RunSQL(
+            "alter table jukebox_collection convert to character set utf8 collate utf8_general_ci"
+        ),
+        migrations.RunSQL(
+            "alter table jukebox_folder convert to character set utf8 collate utf8_general_ci"
+        ),
+        migrations.RunSQL(
+            "alter table jukebox_song convert to character set utf8 collate utf8_general_ci"
+        ),
+        migrations.RunSQL(
+            "alter database hackradio character set utf8;"
+        ),
+        migrations.RunSQL(
+            "alter database hackradio collate utf8_general_ci;"
+        )
+
+def noop(apps, schema_editor):
+    pass
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -48,5 +69,8 @@ class Migration(migrations.Migration):
         ),
         migrations.RunPython(
             insert_legacy_collection, remove_legacy_collection
+        ),
+        migrations.RunPython(
+            convert_to_utf8, noop
         ),
     ]
