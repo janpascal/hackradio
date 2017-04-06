@@ -112,6 +112,8 @@ JUKEBOX_OUTPUT_MODULE = config.get('jukebox', 'JUKEBOX_OUTPUT_MODULE')
 JUKEBOX_EXTENSIONS = config.get('jukebox', 'JUKEBOX_EXTENSIONS').split()
 FFMPEG_OPTIONS = config.get('jukebox', 'FFMPEG_OPTIONS')
 
+ENABLE_UPLOAD = config.getboolean('jukebox', 'ENABLE_UPLOAD')
+
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
