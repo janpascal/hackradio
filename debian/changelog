@@ -1,3 +1,14 @@
+hackradio (3.5-1) unstable; urgency=medium
+
+  * Upstream release 3.5:
+    Make upload page configurable (ENABLE_UPLOAD setting)
+    Do not crash when emcountering illegally encoded file or directory names 
+        on import
+    Convert database and tables to UTF8 encoding and collation for MySQL 
+        databases
+
+ -- Jan-Pascal van Best <janpascal@vanbest.org>  Fri, 07 Apr 2017 17:25:16 +0200
+
 hackradio (3.4-1) unstable; urgency=medium
 
   * Upstream release 3.4:
@@ -5,7 +16,7 @@ hackradio (3.4-1) unstable; urgency=medium
     Add New Folder context menu item in Select Folders view
     Fix extensions configuration handling
 
- -- Jan-Pascal van Best (macOS dev vm) <janpascal@vanbest.org>  Sat, 01 Apr 2017 22:10:12 +0200
+ -- Jan-Pascal van Best <janpascal@vanbest.org>  Sat, 01 Apr 2017 22:10:12 +0200
 
 hackradio (3.3-1) unstable; urgency=medium
 

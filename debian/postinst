@@ -30,7 +30,11 @@ if [ "$1" = configure ] ; then
 
     su --shell /bin/bash --login www-data --command "/usr/share/hackradio/manage.py migrate"
 
-    dh_apache2 a2enmod wsgi
+   if [ -e /usr/share/apache2/apache2-maintscript-helper ] ; then
+       . /usr/share/apache2/apache2-maintscript-helper
+       apache2_invoke enmod wsgi || exit $?
+    fi
+    # dh_apache2 a2enmod wsgi
     # dh_apache2 a2enconf hackradio
 fi
 

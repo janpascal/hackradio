@@ -4,8 +4,8 @@ Author: Jan-Pascal van Best <janpascal@vanbest.org>
 This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
 Index: hackradio/hackradio/settings.py
 ===================================================================
---- hackradio.orig/hackradio/settings.py	2017-04-01 22:13:04.944734444 +0200
-+++ hackradio/hackradio/settings.py	2017-04-01 22:14:25.574720890 +0200
+--- hackradio.orig/hackradio/settings.py	2017-04-07 17:20:09.808908089 +0200
++++ hackradio/hackradio/settings.py	2017-04-07 17:24:05.044592320 +0200
 @@ -20,13 +20,10 @@
  # Quick-start development settings - unsuitable for production
  # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
@@ -31,7 +31,7 @@ Index: hackradio/hackradio/settings.py
          'APP_DIRS': True,
          'OPTIONS': {
              'context_processors': [
-@@ -77,52 +74,6 @@
+@@ -77,54 +74,6 @@
  
  WSGI_APPLICATION = 'hackradio.wsgi.application'
  
@@ -70,6 +70,8 @@ Index: hackradio/hackradio/settings.py
 -JUKEBOX_EXTENSIONS = config.get('jukebox', 'JUKEBOX_EXTENSIONS').split()
 -FFMPEG_OPTIONS = config.get('jukebox', 'FFMPEG_OPTIONS')
 -
+-ENABLE_UPLOAD = config.getboolean('jukebox', 'ENABLE_UPLOAD')
+-
 -# Database
 -# https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 -
@@ -84,7 +86,7 @@ Index: hackradio/hackradio/settings.py
  # Password validation
  # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
  
-@@ -159,16 +110,19 @@
+@@ -161,16 +110,19 @@
  MEDIA_ROOT = os.path.join(BASE_DIR, "files")
  
  
@@ -109,7 +111,7 @@ Index: hackradio/hackradio/settings.py
      'handlers': {
          'console': {
              'class': 'logging.StreamHandler',
-@@ -176,19 +130,35 @@
+@@ -178,19 +130,35 @@
          'file': {
              'level': 'DEBUG',
              'class': 'logging.FileHandler',
