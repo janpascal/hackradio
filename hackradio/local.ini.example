@@ -26,3 +26,5 @@ JUKEBOX_OUTPUT_MODULE = SHOUT
 JUKEBOX_EXTENSIONS = mp3 flac ogg mpc m4a wav
 
 FFMPEG_OPTIONS = -codec:a libmp3lame -qscale:a 2 -loglevel warning
+
+ENABLE_UPLOAD = False

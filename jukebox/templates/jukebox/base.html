@@ -25,7 +25,9 @@
                 <li role="presentation" {% if page_id == "queue" %} class="active" {% endif %}><a href="{% url 'jukebox:queue' %}">Queue</a></li>
                 <li role="presentation" {% if page_id == "select_folders" %} class="active" {% endif %}><a href="{% url 'jukebox:select_folders' %}">Select Folders</a></li>
                 <li role="presentation" {% if page_id == "collections" %} class="active" {% endif %}><a href="{% url 'jukebox:collections' %}">Collections</a></li>
+                {% if enable_upload %}
                 <li role="presentation" {% if page_id == "upload" %} class="active" {% endif %}><a href="{% url 'jukebox:upload' %}">Upload</a></li>
+                {% endif %}
                 {% if player_has_play_url %}
                 <li role="presentation"><a class="play" href="{{ stream_url }}"><span class="glyphicon glyphicon-headphones" aria-hidden="true"></span></a></li>
                 {% endif %}

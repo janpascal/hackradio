@@ -105,8 +105,12 @@ def recurse_import_dir(collection, root_path, parent, display_dir, folder_ids):
     songs = []
     extensions = [".{}".format(s) for s in settings.JUKEBOX_EXTENSIONS]
     for f in os.listdir(root_path):
+        try:
+            disk_path = os.path.join(root_path, f)
+        except UnicodeDecodeError:
+            logger.debug("Encountered illegal encoded file name, skipping")
+            continue
         logger.debug(u"Examining file {} in dir {}".format(f, root_path))
-        disk_path = os.path.join(root_path, f)
         if os.path.isdir(disk_path):
             logger.debug(u"Directory {}, recursing".format(disk_path))
             found_in_subtree = recurse_import_dir(collection, disk_path, folder, display_dir + "/" + f, folder_ids)

@@ -12,7 +12,7 @@ from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Count
 from django.forms.models import model_to_dict
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, HttpResponseNotFound
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
@@ -35,7 +35,8 @@ def base_context():
         "player_needs_convert": ((flags & Player.PLAYER_NEEDS_CONVERT) != 0),
         "player_supports_pause": ((flags & Player.PLAYER_SUPPORTS_PAUSE) != 0),
         "player_supports_volume": ((flags & Player.PLAYER_SUPPORTS_VOLUME) != 0),
-        "player_has_play_url": ((flags & Player.PLAYER_HAS_PLAY_URL) != 0)
+        "player_has_play_url": ((flags & Player.PLAYER_HAS_PLAY_URL) != 0),
+        "enable_upload": settings.ENABLE_UPLOAD
     }
     return context
 
@@ -61,6 +62,9 @@ def collections_page(request):
     return render(request, "jukebox/collections.html", context)
 
 def upload_page(request):
+    if not settings.ENABLE_UPLOAD:
+        return HttpResponseNotFound('<h1>Page not found</h1>')
+
     if request.method == 'POST':
         form = UploadArchiveForm(request.POST, request.FILES)
         if form.is_valid():
@@ -75,11 +79,9 @@ def upload_page(request):
     else:
         form = UploadArchiveForm()
 
-    context = {
-        "page_id": "upload",
-        "stream_url": settings.JUKEBOX_STREAM_URL,
-        'form': form
-    }
+    context = base_context()
+    context["page_id"] = "index"
+    context['form'] = form
     return render(request, "jukebox/upload.html", context)
 
 # JSON data requests
