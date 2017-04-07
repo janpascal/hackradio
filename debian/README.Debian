@@ -6,14 +6,34 @@ You will probably need to edit the following settings:
 ALLOWED_HOSTS: Add the host name your web server is reachable as
 LANGUAGE_CODE, TIME_ZONE, etc: Edit to taste
 SECRET_KEY: Don't touch, please
+JUKEBOX_OUTPUT_MODULE: Either LIBVLC or SHOUT
+
+When you use the SHOUT output module, please edit the following settings:
 JUKEBOX_SHOUT_*: How to connect to your icecast server
 JUKEBOX_STREAM_URL: URL clients can use to listen to the stream
 JUKEBOX_CONVERT_CONCURRENCY: How many parallel processes to use for the conversion to mp3
 
+Apache configuration
+--------------------
 Also have a look at /etc/apache2/conf-enabled/hackradio. You may want to change the URL path the
 application is made available at (by default /hackradio/jukebox/), or have the application only
 available in one (or more) virtual hosts, or add an extra alias.
 
+When you have non-ASCII characters in your directory or file names and your file
+system is, e.g. UTF-8 encoded, you need to do some configuration in
+/etc/apache2/envvars:
+
+export LANG='en_US.UTF-8'
+export LC_ALL='en_US.UTF-8'
+export LC_CTYPE='en_US.UTF-8'
+
+Audio configuration
+-------------------
+You may need to add www-data to the 'audio' group if you use the LIBVLC output
+module
+
+Restarting Apache
+-----------------
 After configuring, you will need to (re)start the streaming daemon:
 # systemctl restart hackradio
 and the Apache web server:

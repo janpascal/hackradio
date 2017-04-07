@@ -19,7 +19,7 @@ SECRET_KEY = '__SECRET_KEY__'
 STATIC_URL = '/hackradio/static/'
 
 # Output module: SHOUT or LIBVLC
-JUKEBOX_OUTPUT_MODULE = 'SHOUT'
+JUKEBOX_OUTPUT_MODULE = 'LIBVLC'
 
 # Icecast stream configuration
 JUKEBOX_SHOUT_HOST = 'localhost'
