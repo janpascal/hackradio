@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 import logging
 import os.path
-from Queue import Queue
+import Queue
 import sys
 import string
 import threading
@@ -25,7 +25,7 @@ class PlayerThread(threading.Thread):
         super(PlayerThread, self).__init__()
         self.logger = logging.getLogger(__name__)
         self.logger.info("Creating PlayerThread")
-        self.play_q = Queue()
+        self.play_q = Queue.Queue()
         self.is_playing = False
         self.connected = False
         self.pause_request = threading.Event()

@@ -108,7 +108,7 @@ def recurse_import_dir(collection, root_path, parent, display_dir, folder_ids):
         try:
             disk_path = os.path.join(root_path, f)
         except UnicodeDecodeError:
-            logger.debug("Encountered illegal encoded file name, skipping")
+            logger.warning("Encountered illegal encoded file name, skipping")
             continue
         logger.debug(u"Examining file {} in dir {}".format(f, root_path))
         if os.path.isdir(disk_path):
