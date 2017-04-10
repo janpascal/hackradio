@@ -1,5 +1,9 @@
 Changelog for hackradio
 
+v3.6 (2017-04-10)
+    Make sure illegally encoded file name warning is seen
+    Fix runtime error (Queue.Empty)
+
 v3.5 (2017-04-07)
     Make upload page configurable (ENABLE_UPLOAD setting)
     Do not crash when emcountering illegally encoded file or directory names on import
