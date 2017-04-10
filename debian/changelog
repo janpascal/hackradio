@@ -1,3 +1,12 @@
+hackradio (3.6-1) unstable; urgency=medium
+
+  * Added dependency on python-shout and python-django-js-reverse
+  * Upstream release 3.6:
+    Make sure illegally encoded file name warning is seen
+    Fix runtime error (Queue.Empty)
+
+ -- Jan-Pascal van Best <janpascal@vanbest.org>  Mon, 10 Apr 2017 17:34:35 +0200
+
 hackradio (3.5-1) unstable; urgency=medium
 
   * Upstream release 3.5:
